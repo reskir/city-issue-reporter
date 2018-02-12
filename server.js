@@ -14,13 +14,19 @@ app.set("view engine", "pug");
 app.post("/", async (req, res) => {
   if (!req.files) return res.status(400).send("No files were uploaded!");
   const { foo } = req.files;
-
   const uploadTo = `uploads/${foo.name}`;
   foo.mv(uploadTo);
   uploadAndCheck(uploadTo).then(result => {
+    const pattern = /[a-zA-Z]{3}\s[0-9]{3}/;
+    let message;
+    if (result.textDetection) {
+      message = result.textDetection.join().match(pattern)
+        ? result.textDetection.join().match(pattern)[0]
+        : "Nerasta";
+    }
     res.render("result", {
       title: "Hey",
-      message: result.textDetection,
+      message,
       image: `http://storage.googleapis.com/reskir-37494.appspot.com/${foo.name}`
     });
   });

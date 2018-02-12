@@ -19,12 +19,16 @@ const uploadAndCheck = async filename => {
       return client
         .textDetection(image)
         .then(results => {
-          const textAnnotations = results[0].textAnnotations;
-          console.log("Text detection:");
+          console.log(results[0].textAnnotations.length);
+          if (results[0].textAnnotations.length > 0) {
+            const textAnnotations = results[0].textAnnotations;
+            return {
+              textDetection: textAnnotations.map(text => text.description),
+              image
+            };
+          }
           return {
-            textDetection:
-              textAnnotations.map(text => text.description) ||
-              "No text detected",
+            textDetection: null,
             image
           };
         })
