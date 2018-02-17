@@ -1,11 +1,11 @@
-require('dotenv').config();
-const TelegramBot = require('node-telegram-bot-api');
-const checkPhoto = require('./googleService');
+require("dotenv").config();
+const TelegramBot = require("node-telegram-bot-api");
+const checkPhoto = require("./googleService");
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.NODE_TELEGRAM_BOT_TOKEN;
 
 // Create a bot that uses 'polling' to fetch new updates
-const bot = new TelegramBot(token, {polling: true});
+const bot = new TelegramBot(token, { polling: true });
 
 // Matches "/echo [whatever]"
 bot.on(/\/start (.+)/, (msg, match) => {
@@ -16,22 +16,25 @@ bot.on(/\/start (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
   const resp = match[1]; // the captured "whatever"
   // send back the matched "whatever" to the chat
-  bot.sendMessage(chatId, 'Sveiki, \n šis botas gali užregistruoti KET pažeidimą, nufotgrafuokite automobilį ir atsiųskite nuotraukas');
+  bot.sendMessage(
+    chatId,
+    "Sveiki, \n šis botas gali užregistruoti KET pažeidimą, nufotgrafuokite automobilį ir atsiųskite nuotraukas"
+  );
 });
 
 // Listen for any kind of message. There are different kinds of
 // messages.
-bot.on('text', (msg) => {
+bot.on("text", msg => {
   const chatId = msg.chat.id;
   // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, 'Received your text message!');
+  bot.sendMessage(chatId, "Received your text message!");
 });
 
 // bot.on('inline_query', (msg) => {
 //   console.log(msg);
 // })
 
-bot.on('photo', async ({photo, chat}) => {
+bot.on("photo", async ({ photo, chat }) => {
   const chatId = chat.id;
   console.log(photo);
   const file_id = photo[3].file_id;
@@ -39,6 +42,8 @@ bot.on('photo', async ({photo, chat}) => {
     return response.file_path;
   });
   console.log(imagePath);
-  const text = await checkPhoto(`https://api.telegram.org/file/bot${token}/${imagePath}`);
+  const text = await checkPhoto(
+    `https://api.telegram.org/file/bot${token}/${imagePath}`
+  );
   bot.sendMessage(chatId, text.textDetection);
-})
+});
