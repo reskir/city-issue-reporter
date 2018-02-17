@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "reskir-37494",
+  "private_key_id": "c974f6dcb872a7743b5406d493ec3f3868a8b4b8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC8OaO02mj1jf2w\nPvAg1gaDWOxr3bkOj/EgVAgkE5jXGp5gwGinzvLcUJIGYQwnC/42Ex2VBJChn9Lf\nK5BXBcfUJrgt22wnt+lXFGFFX7hejwKDTR1yTK1WVfDB6/yeG/B9ohAVlZvRKkd3\n5tSTP9EWRr9JGLqkFh8IcrHKeGb+BH3VhUYBZWDESchDzRe+tHoNSbnIL76J7sg7\nwOlcorI8fEkXSV3Cen96YskYbLJzykvoDNuuZ2aAK8dM7gB4f+bNFnQ9QPSqhSfR\noCrYTrG2hpqcwqxTaqOzJ9gGIvfeEscNbn/qPEte1j2sckOVvK0bJIMVdJxaj93U\nPIbE+Xr7AgMBAAECggEABsDssk8J6BGlsh63//2d8zWMGhy1CKQ6iyXout6nI8S1\nPRR6TNccmLIdYzQ1OutvviH2dEPbKqlw6AgIoE65Sk/vWNngKharvS+ig9o448+u\nz+ZC8bh1mbzwrAybHlMzUFaxzAx3sEwbj15Nb1EhX/K+51EHVV7j0ypGXdTvIRsZ\nOkPElVOBrIGcqb8xsn2NtbeL/HZEukIGNloS0U7lWtCecpE1QssYd5R5OgbSbTrU\nodlhUF5TM4YCF9aq4CP4zOeP+4zKV3AZNY1Omi4vpU3pKGck5/uPnDqQMQ/HS9cZ\nmg+xsY6qPjQcuUNvXIf3R6McoHQ+igvT/QtMGv6h2QKBgQD+V327e454+G9C0VBZ\nEKeHoB8XruL81mIhYYJCudRGbf98dZy7T8G8rO0ht1cE0PK7d48DrRfZMPOoY8yf\nlz34dPLtNKIOyFX9qJ6M9KR7yP3nex7mcaJ4PSvkoKzqrIzVZZgFDYMDW0ydlao5\n8GQAvfQcj6oymSVt2mwbDV6/KQKBgQC9c8vmEcceqekXSh0Ar/udiRAaH5Yctgaj\n30aiWT5fbWGbyNlzsJLY1Dc9ZcK6GH+5TJ5gjSKHLMtnmIppVoYImDjEzaPBHb2n\nuLVkrmXOj1uv/psxe502NQa8u05Gt3DGlM7wvMlqUjWkgvpEHGkv6w3cawYEshR7\nv1JWPRqBgwKBgFZbholdzmYslDpvr4ROL1PRfj0gWFnYwMDsxrm5NuYi+xhbJrhC\nwFk7rdhA0/8Coygb1Cc/YlWQVWrbV+LoC1aM/t6jfFLgmrHhytO5TQ/qkqtCFp/P\n/YYt3vVlyNB1fewG7rLof49oNH9dDctWX94QoQ4BiZxce2TtQL9+rqjhAoGBALZd\nOd+sKz0UF0CI4eQggpcBMdPDpe7bNQcXTNnICCc5liSsMM2RIbnAha//PXN/U6sd\n2rJcCOmPr/h3uHxvgjPRu4uN21xwcXh6b3mL+oncK0j9T4xRTmK4plSUBGRD/jXZ\nVl4bi9Jhcit6vMdFhedPXxdWmgN5HAiGgQ5sYRBbAoGBALDfMLMSWjXoiO3fKYDQ\npDB4xXVzA6m0nu7hYmPDYlQ+4PoeVr4Et/p7FcpfIYUEnUX1hNAV/miohVBqqmq6\nH6t1AxBsggnfUeifFzT3UTL80Xz7HtC8LvPI0NS34UMsfxVuS5AcS0nZinztChKX\nvd5grPUnmYC0qTMf7xkLACMt\n-----END PRIVATE KEY-----\n",
+  "client_email": "urbanistas@reskir-37494.iam.gserviceaccount.com",
+  "client_id": "117234499977130984138",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/urbanistas%40reskir-37494.iam.gserviceaccount.com"
+}

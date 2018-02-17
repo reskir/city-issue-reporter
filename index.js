@@ -9,20 +9,6 @@ const {
 
 const express = require("express");
 const app = express();
-const router = express.Router();
-
-const { OAuth2Client } = require('google-auth-library');
-
-function authorize() {
-    return new Promise(resolve => {
-        new OAuth2Client(
-            process.env.GOOGLE_CLIENT_EMAIL, // defined in Heroku
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_PRIVATE_KEY, // defined in Heroku
-        );
-    });
-}
-authorize();
 
 app.listen(3000, () =>
   console.log("Example app listening on port localhost:3000!")
