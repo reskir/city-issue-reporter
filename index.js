@@ -7,12 +7,29 @@ const {
   getTextFromImage
 } = require("./registerProlem/helpers");
 
+const express = require("express");
+const app = express();
+const router = express.Router();
+
+app.listen(3000, () =>
+  console.log("Example app listening on port localhost:3000!")
+);
+
+
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.NODE_TELEGRAM_BOT_TOKEN;
-
-// Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
 
+app.get('/', (req, res) => {
+  res.send('<h3>App is running</h3>');
+});
+
+// Create a bot that uses 'polling' to fetch new updates
+const options = {
+  offset: 2,
+  limit: 30,
+  timeout: 5
+};
 // Matches "/echo [whatever]"
 bot.on(/\/echo (.+)/, (msg, match) => {
   // 'msg' is the received Message from Telegram
@@ -41,7 +58,6 @@ bot.onText(/\/start/, msg => {
 // messages.
 bot.on("text", msg => {
   const chatId = msg.chat.id;
-  console.log(msg);
   // send a message to the chat acknowledging receipt of their message
   bot.sendMessage(chatId, "👌");
 });
