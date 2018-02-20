@@ -1776,6 +1776,16 @@ split-array-stream@^1.0.0:
     async "^2.4.0"
     is-stream-ended "^0.1.0"
 
+sql.js@0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/sql.js/-/sql.js-0.3.2.tgz#1676321f0716bdbbdef8d6bf70603424405d3889"
+
+sqlite-sync@^0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/sqlite-sync/-/sqlite-sync-0.3.6.tgz#d2b6a3b82d705d0ba8c2c5410fed9f620fbca37f"
+  dependencies:
+    sql.js "0.3.2"
+
 sshpk@^1.7.0:
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/sshpk/-/sshpk-1.13.1.tgz#512df6da6287144316dc4c18fe1cf1d940739be3"

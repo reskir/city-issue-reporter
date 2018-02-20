@@ -5,15 +5,17 @@ const carNumberOptions = (text, message_id) => {
     reply_to_message_id: message_id,
     reply_markup: {
       remove_keyboard: true,
-      keyboard: [
+      inline_keyboard: [
         [
           {
-            text: `✅ ${text}`
+            text: `✅ Taip - ${text}`,
+            callback_data: text
           }
         ],
         [
           {
-            text: " ❌ Nurodyti"
+            text: " ❌ Ne, nurodysiu",
+            callback_data: text
           }
         ]
       ]
@@ -47,16 +49,12 @@ const getTextFromImage = async (bot, chatId, file_id, message_id, token) => {
     return response.file_path;
   });
 
-  const text = await checkPhoto(
-    `https://api.telegram.org/file/bot${token}/${imagePath}`
-  );
-
-  if (text.automobileNumbers) {
-    const opts = carNumberOptions(text.automobileNumbers, message_id);
-    return bot.sendMessage(chatId, "Ar teisingi automolio numeriai?", opts);
-  } else {
-    return bot.sendMessage(chatId, text.textDetection);
-  }
+  return {
+    text: await checkPhoto(
+      `https://api.telegram.org/file/bot${token}/${imagePath}`
+    ),
+    imagePath: `https://api.telegram.org/file/bot${token}/${imagePath}`
+  };
 };
 
 module.exports = { carNumberOptions, locationOptions, getTextFromImage };

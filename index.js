@@ -1,6 +1,8 @@
 require("dotenv").config();
 const TelegramBot = require("node-telegram-bot-api");
 const checkPhoto = require("./googleVisionApi");
+const sqlite = require("sqlite-sync"); //requiring
+
 const {
   carNumberOptions,
   locationOptions,
@@ -14,32 +16,40 @@ app.listen(process.env.PORT || 3000, () =>
   console.log("Example app listening on port localhost:3000!")
 );
 
+sqlite.connect("pazeidejai.db");
+
+sqlite.run(
+  `CREATE TABLE IF NOT EXISTS parkers(
+    id  INTEGER PRIMARY KEY AUTOINCREMENT, 
+    key TEXT NOT NULL,
+    from_id INTEGER,
+    message_id INTEGER,
+    imagePath TEXT,
+    imageId TEXT
+  );`,
+  function(res) {
+    if (res.error) throw res.error;
+  }
+);
 
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.NODE_TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token, { polling: true });
 
-app.get('/', (req, res) => {
-  res.send('<h3>App is running</h3>');
+app.get("/", (req, res) => {
+  res.send("<h3>App is running</h3>");
 });
 
-// Create a bot that uses 'polling' to fetch new updates
-const options = {
-  offset: 2,
-  limit: 30,
-  timeout: 5
-};
-// Matches "/echo [whatever]"
-bot.on(/\/echo (.+)/, (msg, match) => {
-  // 'msg' is the received Message from Telegram
-  // 'match' is the result of executing the regexp above on the text content
-  // of the message
+bot.onText(/\/ket (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
-  const resp = match[1]; // the captured "whatever"
-  // send back the matched "whatever" to the chat
+  const resp = match[1];
+
   bot.sendMessage(
     chatId,
-    "Sveiki, \n šis botas gali užregistruoti KET pažeidimą, atsiųskite arba nufotgrafuokite pažeidėją"
+    `
+      👋, šis botas gali užregistruoti KET pažeidimą, 
+      atsiųskite arba nufotgrafuokite pažeidėjo 🚗.
+    `
   );
 });
 
@@ -50,15 +60,18 @@ bot.onText(/\/start/, msg => {
     chatId,
     "Sveiki, \n šis botas gali užregistruoti KET pažeidimą, nufotgrafuokite automobilį ir atsiųskite nuotraukas"
   );
-  //bot.sendMessage(msg.chat.id, "Kur įvyko KET parkavimo pažeidimas?", opts);
+  bot.sendMessage(msg.chat.id, "Kur įvyko KET parkavimo pažeidimas?", opts);
 });
 
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on("text", msg => {
-  const chatId = msg.chat.id;
-  // send a message to the chat acknowledging receipt of their message
-  bot.sendMessage(chatId, "👌");
+bot.on("callback_query", msg => {
+  console.log(sqlite.run("SELECT * from parkers"));
+  bot.sendMessage(msg.message.chat.id, "/success");
+});
+
+bot;
+
+bot.onText(/\/specify (.+)/, msg => {
+  bot.sendMessage(msg.chat.id, "write car number");
 });
 
 bot.on("document", async ({ document, chat, message_id }) => {
@@ -71,6 +84,45 @@ bot.on("document", async ({ document, chat, message_id }) => {
 bot.on("photo", async ({ chat, photo, message_id }) => {
   const chatId = chat.id;
   const file_id = photo[3].file_id; // this will take best quality image uploaded to telegram
-
-  return await getTextFromImage(bot, chatId, file_id, message_id, token);
+  const result = await getTextFromImage(
+    bot,
+    chatId,
+    file_id,
+    message_id,
+    token
+  );
+  console.log(photo);
+  if (result.text.automobileNumbers) {
+    if (isCarExists(result.text.automobileNumbers)) {
+      bot.sendMessage(chatId, "Car exists!");
+    } else {
+      const opts = carNumberOptions(
+        result.text.automobileNumbers,
+        message_id,
+        result.imagePath
+      );
+      bot.sendMessage(
+        chatId,
+        `Automobilio numeriai sutampa ${result.text.automobileNumbers} ?`,
+        opts
+      );
+      sqlite.insert("parkers", {
+        key: result.text.automobileNumbers,
+        imagePath: photo[3].file_path,
+        imageId: photo[3].file_id
+      });
+    }
+  } else {
+    bot.sendMessage(chatId, `Nurodykite automobilio registracijos numerį`);
+  }
 });
+
+function isCarExists(key) {
+  const data = sqlite.run("SELECT * FROM parkers WHERE key = ? LIMIT 1", [key]);
+  if (data.length) {
+    return true;
+  }
+  return false;
+}
+
+function addCar(key) {}

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "cleaninstall": "rm -r node_modules && yarn"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +19,7 @@
     "fs": "^0.0.1-security",
     "google-auth-library": "^1.2.1",
     "image-downloader": "^3.3.0",
-    "node-telegram-bot-api": "^0.30.0"
+    "node-telegram-bot-api": "^0.30.0",
+    "sqlite-sync": "^0.3.6"
   }
 }
