@@ -21,5 +21,8 @@
     "image-downloader": "^3.3.0",
     "node-telegram-bot-api": "^0.30.0",
     "sqlite-sync": "^0.3.6"
+  },
+  "devDependencies": {
+    "lodash.get": "^4.4.2"
   }
 }

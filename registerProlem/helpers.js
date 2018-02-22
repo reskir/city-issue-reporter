@@ -1,21 +1,21 @@
 const checkPhoto = require("../googleVisionApi");
 
-const carNumberOptions = (text, message_id) => {
+const carNumberOptions = (text, msg) => {
   return {
-    reply_to_message_id: message_id,
+    reply_to_message_id: msg.message_id,
     reply_markup: {
       remove_keyboard: true,
-      inline_keyboard: [
+      one_time_keyboard: true,
+      keyboard: [
         [
           {
-            text: `✅ Taip - ${text}`,
-            callback_data: text
+            text: text,
+            callback_data: msg
           }
         ],
         [
           {
-            text: " ❌ Ne, nurodysiu",
-            callback_data: text
+            text: " ❌ Ne, nurodysiu"
           }
         ]
       ]
@@ -27,16 +27,11 @@ const locationOptions = msg => {
   return {
     reply_to_message_id: msg.message_id,
     reply_markup: {
-      remove_keyboard: true,
       keyboard: [
         [
           {
-            text: "Toje vietoje kur esu dabar 👌"
-          }
-        ],
-        [
-          {
-            text: "Pažymėti kitą vietą žemėlapyje 🗺"
+            text: "Nurodykite savo vietą",
+            request_location: true
           }
         ]
       ]
