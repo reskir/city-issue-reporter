@@ -16,6 +16,16 @@ const app = express();
 app.listen(process.env.PORT || 3000, () =>
   console.log("Example app listening on port localhost:3000!")
 );
+app.set("view engine", "pug");
+app.use(express.static(__dirname + "/public"));
+app.get("/", function(req, res) {
+  const data = sqlite.run("SELECT * from parkers");
+  const newData = data.map(car => {
+    return car.key;
+  });
+  //res.send(JSON.stringify(data));
+  res.render("cars", { data });
+});
 
 sqlite.connect("pazeidejai.db");
 let uid;
@@ -199,9 +209,11 @@ bot.on("contact", msg => {
   );
   // console.log(photoId);
   console.log(photoId);
-  bot.sendPhoto(msg.chat.id, photoId[0].imageId, {
-    caption: `Automobilis valst. numeriu ${uid} – užregistruotas`
-  });
+  const options = {
+    parse_mode: "HTML",
+    caption: `<i>Automobilis valst. numeriu</i> <b>${uid}</b> – sėkmingai užregistruotas`
+  };
+  bot.sendPhoto(msg.chat.id, photoId[0].imageId, options);
   bot.sendMessage(
     msg.chat.id,
     "Ačiū, informacija įrašyta ir bus perduota nagrinėjimui!",

@@ -23,6 +23,7 @@
     "sqlite-sync": "^0.3.6"
   },
   "devDependencies": {
-    "lodash.get": "^4.4.2"
+    "lodash.get": "^4.4.2",
+    "pug": "^2.0.0-rc.4"
   }
 }
