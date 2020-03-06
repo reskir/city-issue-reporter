@@ -71,7 +71,19 @@ const start = async () => {
                 const cars = await CarModel.find()
                     .lean()
                     .exec()
-                return h.view('index', { cars })
+                const data = cars.map(car => {
+                    if (car.location) {
+                        const { longitude, latitude } = car.location
+                        return {
+                            ...car,
+                            locationURL: `/location/?longitude=${longitude}&latitude=${latitude}`
+                        }
+                    }
+                    return {
+                        ...car
+                    }
+                })
+                return h.view('index', { cars: data.reverse() })
             }
         }
     })
@@ -95,6 +107,20 @@ const start = async () => {
         method: 'DELETE',
         path: '/person/{id}',
         handler: async (request, h) => {}
+    })
+
+    server.route({
+        method: 'GET',
+        path: '/location/',
+        handler: async (request, h) => {
+            const query = request.query
+            return {
+                location: {
+                    latitude: query.latitude,
+                    longitude: query.longitude
+                }
+            }
+        }
     })
 }
 

@@ -21,21 +21,64 @@ bot.command('start', async ctx => {
 })
 
 bot.command('ket', async (ctx, next) => {
-    const valstybinis_numeris = ctx.message.text.replace('/ket', '')
+    const valstybinis_numeris = ctx.message.text
+        .replace('/ket', '')
+        .toUpperCase()
     if (valstybinis_numeris) {
-        bot.context.valstybinis_numeris = valstybinis_numeris
-        ctx.reply(`Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`)
-        const car = new CarModel({
-            plateNumber: valstybinis_numeris,
-            time: timeConverter(ctx.message.date)
-        })
-        await car.save(function(err, { id }) {
-            bot.context.pazeidimo_numeris = id
-        })
         const chatId = ctx.chat.id
-        telegram.sendMessage(
-            chatId,
-            `Įkelkite kelias nuotraukas kuriuose matosi automobilio valstybinis numeris`
+        await CarModel.findOne(
+            { plateNumber: valstybinis_numeris },
+            async function(err, res) {
+                if (res) {
+                    const { plateNumber, photos = [], time } = res
+                    if (photos.length) {
+                        telegram.sendPhoto(
+                            chatId,
+                            photos[0].file_id,
+                            plateNumber
+                        )
+                    }
+                    // const opts = {
+                    //     reply_markup: {
+                    //         inline_keyboard: [
+                    //             [
+                    //                 {
+                    //                     text: 'Atnaujinti lokaciją',
+                    //                     request_location: true
+                    //                 },
+                    //                 {
+                    //                     text: 'Ne',
+                    //                     callback_data: 'C1'
+                    //                 }
+                    //             ]
+                    //         ]
+                    //     }
+                    // }
+                    // telegram.sendMessage(
+                    //     chatId,
+                    //     `Ar norite atnaujinti pažeidėjo ${plateNumber} duomenys?`,
+                    //     opts
+                    // )
+                    ctx.reply(
+                        `Automobilis ${plateNumber} jau registruotas ${time}`
+                    )
+                } else {
+                    bot.context.valstybinis_numeris = valstybinis_numeris
+                    const car = new CarModel({
+                        plateNumber: valstybinis_numeris,
+                        time: timeConverter(ctx.message.date)
+                    })
+                    await car.save(function(err, { id }) {
+                        bot.context.pazeidimo_numeris = id
+                    })
+                    ctx.reply(
+                        `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
+                    )
+                    ctx.reply(
+                        `Įkelkite kelias 📸 kuriuose matosi automobilio valstybinis numeris`
+                    )
+                }
+            }
         )
     } else {
         ctx.reply(`rašykite "/ket VALSTYBINIS AUTOMOBILIO NUMERIS"`)
@@ -43,24 +86,29 @@ bot.command('ket', async (ctx, next) => {
 })
 
 bot.on('location', async ctx => {
-    const { location } = ctx.message
-    console.log(location)
-    await CarModel.updateOne(
-        { _id: bot.context.pazeidimo_numeris },
-        { location }
-    )
-    console.log(ctx.valstybinis_numeris)
-    ctx.reply
+    if (bot.context.valstybinis_numeris) {
+        const { location } = ctx.message
+        await CarModel.updateOne(
+            { _id: bot.context.pazeidimo_numeris },
+            { location }
+        )
+    } else {
+        ctx.reply('Pradžiai įveskit /ket [automobilio valstybinis numeris]')
+    }
 })
 
 bot.on('photo', async ctx => {
-    const photos = ctx.message.photo
-    const fileId = ctx.message.photo[photos.length - 1].file_id
-    const link = await telegram.getFileLink(fileId)
-    await CarModel.updateOne(
-        { _id: bot.context.pazeidimo_numeris },
-        { $push: { photos: { link } } }
-    )
+    if (bot.context.valstybinis_numeris) {
+        const photos = ctx.message.photo
+        const fileId = ctx.message.photo[photos.length - 1].file_id
+        const link = await telegram.getFileLink(fileId)
+        await CarModel.updateOne(
+            { _id: bot.context.pazeidimo_numeris },
+            { $push: { photos: { link, file_id: fileId } } }
+        )
+    } else {
+        ctx.reply('Pradžiai įveskit /ket [automobilio valstybinis numeris]')
+    }
 })
 
 bot.launch()

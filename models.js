@@ -2,7 +2,8 @@ const Mongoose = require('mongoose')
 const Schema = Mongoose.Schema
 
 const PhotoSchema = new Schema({
-    link: String
+    link: String,
+    file_id: String
 })
 
 const CarModel = Mongoose.model('car', {
