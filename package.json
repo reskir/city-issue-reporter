@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "main": "index.js",
     "license": "MIT",
+    "scripts": {
+        "start": "nodemon server.js",
+        "telegram": "nodemon index.js"
+    },
     "dependencies": {
         "@hapi/hapi": "^19.1.1",
         "@hapi/hoek": "^9.0.3",
