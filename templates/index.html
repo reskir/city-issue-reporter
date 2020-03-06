@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello world</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <style>
+        body{margin: 8px;}
+    </style>
+</head>
+<body>
+    <p class="title is-1">🚘 🎟</p>
+    <table class="table is-fullwidth is-bordered">
+        <thead class="has-background-primary">
+            <tr>
+                <th>Automobilio valstybinis numeris</th>
+                <th>Laikas</th>
+                <th>Nuotraukos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each cars}}
+                <tr>
+                    <td width="400"><b>{{plateNumber}}</b></td>
+                    <td width="200">Laikas: {{time}}</td>
+                    <td>
+                        {{#each photos}}
+                            <figure class="image is-128x128">
+                                <img src={{link}} alt="" />
+                            </figure>
+                        {{/each}}
+                    </td>
+                </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</body>
+</html>
