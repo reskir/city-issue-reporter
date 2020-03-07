@@ -3,7 +3,7 @@ const Hapi = require('@hapi/hapi')
 const Joi = require('@hapi/joi')
 const Path = require('path')
 const Hoek = require('@hapi/hoek')
-const { CarModel } = require('./models')
+const { TicketModel } = require('./models')
 
 Mongoose.connect('mongodb://localhost/ketpazeidimai')
 
@@ -39,7 +39,7 @@ const start = async () => {
         },
         handler: async (request, h) => {
             try {
-                const car = new CarModel(request.payload)
+                const car = new UserModel(request.payload)
                 const result = await car.save()
                 return h.response(result)
             } catch (error) {
@@ -53,10 +53,10 @@ const start = async () => {
         path: '/cars',
         handler: async (request, h) => {
             try {
-                const cars = await CarModel.find()
+                const tickets = await TicketModel.find()
                     .lean()
                     .exec()
-                return h.response(cars)
+                return h.response(tickets)
             } catch (error) {
                 return h.response(error).code(500)
             }
@@ -68,19 +68,19 @@ const start = async () => {
         path: '/',
         config: {
             handler: async (request, h) => {
-                const cars = await CarModel.find()
+                const tickets = await TicketModel.find()
                     .lean()
                     .exec()
-                const data = cars.map(car => {
-                    if (car.location) {
-                        const { longitude, latitude } = car.location
+                const data = tickets.map(ticket => {
+                    if (ticket.location) {
+                        const { longitude, latitude } = ticket.location
                         return {
-                            ...car,
-                            locationURL: `/location/?longitude=${longitude}&latitude=${latitude}`
+                            ...ticket,
+                            locationURL: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
                         }
                     }
                     return {
-                        ...car
+                        ...ticket
                     }
                 })
                 return h.view('index', { cars: data.reverse() })

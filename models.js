@@ -6,16 +6,25 @@ const PhotoSchema = new Schema({
     file_id: String
 })
 
-const CarModel = Mongoose.model('car', {
+const UserSchema = new Schema({
+    userId: String,
+    name: String,
+    surname: String,
+    tickets: [{ type: Schema.ObjectId, ref: 'Ticket' }]
+})
+
+const TicketSchema = new Schema({
     plateNumber: String,
     location: {
         latitude: String,
         longitude: String
     },
+    date: String,
     photos: [PhotoSchema],
-    time: String
+    user: { type: Schema.ObjectId, ref: 'User' }
 })
 
 module.exports = {
-    CarModel
+    UserModel: Mongoose.model('User', UserSchema),
+    TicketModel: Mongoose.model('Ticket', TicketSchema)
 }

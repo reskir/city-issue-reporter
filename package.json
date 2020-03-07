@@ -16,6 +16,7 @@
         "mongodb": "^3.5.4",
         "mongoose": "^5.9.3",
         "telegraf": "^3.36.0",
+        "telegraf-router": "^1.0.7",
         "telegraf-session-local": "^1.0.2",
         "uuid": "^7.0.1",
         "uuidv4": "^6.0.5"
