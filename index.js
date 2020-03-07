@@ -24,7 +24,38 @@ function timeConverter(UNIX_timestamp) {
 
 bot.command('start', async ctx => {
     const about = await telegram.getMe()
-    return ctx.reply(`Welcome to ${about.username}!`)
+    const { id, first_name, last_name } = ctx.message.from
+    await UserModel.findOne(
+        {
+            userId: id
+        },
+        async function(err, user) {
+            if (err) {
+                ctx.reply(err)
+            } else {
+                if (!user) {
+                    await UserModel.create(
+                        {
+                            userId: id,
+                            name: first_name,
+                            surname: last_name,
+                            tickets: []
+                        },
+                        function(err, user) {
+                            if (!err) {
+                                ctx.reply(
+                                    `Welcome to ${about.username} ${first_name}!`
+                                )
+                                console.log(user)
+                            }
+                        }
+                    )
+                } else {
+                    ctx.reply(`Welcome back ${first_name}!`)
+                }
+            }
+        }
+    )
 })
 
 bot.command('ket', async (ctx, next) => {
@@ -168,11 +199,24 @@ bot.command('reports', async (ctx, next) => {
 
 bot.command('remove', async (ctx, next) => {
     const userId = ctx.message.from.id
-    const allTickets = (await TicketModel.find({}).populate('user')) || []
-    if (allTickets.length) {
-        telegram.sendMessage(userId, JSON.stringify(allTickets))
+    const user = await UserModel.findOne({ userId })
+    if (user) {
+        const id = user._id
+        await TicketModel.deleteMany(
+            {
+                user: Mongoose.Types.ObjectId(id)
+            },
+            function(err, res) {
+                if (!err) {
+                    user.tickets = []
+                    user.save()
+                    ctx.reply(`Removed all ${res.deletedCount} report(s)!`)
+                } else {
+                    ctx.reply(err)
+                }
+            }
+        )
     }
-    //console.log(allTickets)
 })
 
 bot.launch()
