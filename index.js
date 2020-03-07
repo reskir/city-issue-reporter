@@ -143,17 +143,26 @@ bot.command('reports', async (ctx, next) => {
     const user = await UserModel.findOne({
         userId: userId
     }).populate('tickets')
-    const tickets = user.tickets
-    if (tickets.length) {
-        tickets.forEach(({ photos, plateNumber }) => {
-            if (photos.length) {
-                telegram.sendPhoto(userId, photos[0].file_id, plateNumber, true)
-            } else {
-                telegram.sendMessage(userId, `No photo: ${plateNumber}`)
-            }
-        })
+    if (user) {
+        const tickets = user.tickets
+        if (tickets.length) {
+            tickets.forEach(({ photos, plateNumber }) => {
+                if (photos.length) {
+                    telegram.sendPhoto(
+                        userId,
+                        photos[0].file_id,
+                        plateNumber,
+                        true
+                    )
+                } else {
+                    telegram.sendMessage(userId, `No photo: ${plateNumber}`)
+                }
+            })
+        } else {
+            ctx.reply('No reports for you sir')
+        }
     } else {
-        ctx.reply('No reports for you sir')
+        ctx.reply('Nothing to report here')
     }
 })
 
