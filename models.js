@@ -23,6 +23,11 @@ const TicketSchema = new Schema({
     date: Date,
     time: String,
     photos: [PhotoSchema],
+    status: {
+        type: String,
+        enum: ['registruotas', 'nagrinėjimas', 'išnagrinėtas'],
+        default: 'registruotas'
+    },
     user: { type: Schema.ObjectId, ref: 'User' }
 })
 

@@ -2,10 +2,10 @@ const dotenv = require('dotenv')
 dotenv.config()
 const Mongoose = require('mongoose')
 const Hapi = require('@hapi/hapi')
+const Boom = require('@hapi/boom')
 const Joi = require('@hapi/joi')
-const Path = require('path')
-const Hoek = require('@hapi/hoek')
 const { TicketModel, UserModel } = require('./models')
+const fetch = require('node-fetch')
 
 Mongoose.connect('mongodb://localhost/', {
     dbName: process.env.DB_NAME,
@@ -16,6 +16,8 @@ Mongoose.connect('mongodb://localhost/', {
 })
     .then(() => console.log('Now connected to MongoDB!'))
     .catch(err => console.error('Something went wrong', err))
+
+Mongoose.set('debug', true)
 
 const start = async () => {
     const server = new Hapi.Server({ host: 'localhost', port: 3000 })
@@ -145,6 +147,46 @@ const start = async () => {
             validate: {}
         },
         handler: async (request, h) => {}
+    })
+
+    server.route({
+        method: 'POST',
+        path: '/updateStatus/',
+        handler: async (request, h) => {
+            const { ticketId, status } = request.query
+            const ticket = await TicketModel.findOne({
+                _id: Mongoose.Types.ObjectId(ticketId)
+            }).populate('user')
+            const userId = ticket.user.userId
+            console.log(userId)
+            try {
+                ticket.status = status
+                await ticket.save().catch(e => {
+                    throw new Error(e)
+                })
+            } catch (e) {
+                return Boom.badData(e)
+            }
+            const photos = ticket.photos
+            const endpoint = photos.length ? 'sendPhoto' : 'sendMessage'
+            const url = new URL(
+                `https://api.telegram.org/bot${process.env.BOT_TOKEN}/${endpoint}`
+            )
+
+            const params = {
+                chat_id: userId,
+                photo: photos[0].file_id,
+                caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+            }
+
+            Object.keys(params).forEach(key =>
+                url.searchParams.append(key, params[key])
+            )
+
+            await fetch(url)
+
+            return h.response(ticket).code(200)
+        }
     })
 
     server.route({

@@ -8,6 +8,7 @@
         "telegram": "nodemon index.js"
     },
     "dependencies": {
+        "@hapi/boom": "^9.0.0",
         "@hapi/hapi": "^19.1.1",
         "@hapi/hoek": "^9.0.3",
         "@hapi/joi": "^17.1.0",

@@ -30,6 +30,7 @@ Mongoose.connect('mongodb://localhost/', {
     .then(() => console.log('Now connected to MongoDB!'))
     .catch(err => console.error('Something went wrong', err))
 
+// Mongoose.set('debug', true)
 const telegram = new Telegram(process.env.BOT_TOKEN)
 const bot = new Telegraf(process.env.BOT_TOKEN, { channelMode: false })
 // bot.use(Telegraf.log())
@@ -90,7 +91,8 @@ bot.command('ket', async (ctx, next) => {
                         const newTicket = new TicketModel({
                             plateNumber: valstybinis_numeris,
                             date,
-                            user: Mongoose.Types.ObjectId(user._id)
+                            user: Mongoose.Types.ObjectId(user._id),
+                            status: 'registruotas'
                         })
                         user.tickets.push(newTicket._id)
                         await user.save()
@@ -216,7 +218,7 @@ bot.on('photo', async ctx => {
     }
 })
 
-bot.command('reports', async (ctx, next) => {
+bot.command('reports', async ctx => {
     const userId = ctx.message.from.id
     const user = await UserModel.findOne({
         userId: userId
@@ -230,15 +232,16 @@ bot.command('reports', async (ctx, next) => {
                     plateNumber,
                     time = 'Nėra',
                     date,
-                    location: { address = 'Nėra' }
+                    location: { address = 'Nėra' },
+                    status
                 }) => {
                     if (photos.length) {
                         await ctx.replyWithPhoto(
                             photos[0].file_id,
                             Extra.load({
-                                caption: `Valstydinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${timeConverter(
+                                caption: `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${timeConverter(
                                     date
-                                )}`
+                                )}\nStatusas: ${status.toUpperCase()}`
                             })
                                 .markdown()
                                 .markup(m =>
@@ -385,17 +388,20 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
     )
 
     if (user) {
-        return await TicketModel.deleteOne(
+        await TicketModel.deleteOne(
             {
                 plateNumber,
                 user: Mongoose.Types.ObjectId(user._id)
             },
-            function(err, res) {
+            async function(err, res) {
                 if (!err && isAlreadyRegistered) {
                     user.tickets = user.tickets.filter(
                         ({ plateNumber: number }) => number !== plateNumber
                     )
                     user.save()
+                    const messageId =
+                        ctx.update.callback_query.message.message_id
+                    ctx.deleteMessage(messageId)
                     ctx.reply(`${plateNumber} sėkmingai pašalintas ✅`)
                 } else if (!isAlreadyRegistered && !err) {
                     ctx.reply(
