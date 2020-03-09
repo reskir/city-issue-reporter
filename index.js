@@ -89,7 +89,7 @@ bot.command('ket', async (ctx, next) => {
                     if (!ticket) {
                         const newTicket = new TicketModel({
                             plateNumber: valstybinis_numeris,
-                            date: date,
+                            date,
                             user: Mongoose.Types.ObjectId(user._id)
                         })
                         user.tickets.push(newTicket._id)
@@ -118,7 +118,7 @@ bot.command('ket', async (ctx, next) => {
                 } else {
                     const ticket = new TicketModel({
                         plateNumber: valstybinis_numeris,
-                        date: timeConverter(date)
+                        date
                     })
                     ticket.save(async function(err, res) {
                         const user = new UserModel({
