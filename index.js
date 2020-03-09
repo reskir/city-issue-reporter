@@ -232,7 +232,7 @@ bot.command('reports', async (ctx, next) => {
                             Markup.inlineKeyboard([
                                 Markup.callbackButton(
                                     `♻️ Pakeisti ${plateNumber}`,
-                                    'Update report'
+                                    `UPDATE REPORT ${plateNumber}`
                                 ),
                                 Markup.callbackButton(
                                     '❌ Pašalinti',
@@ -242,14 +242,30 @@ bot.command('reports', async (ctx, next) => {
                         )
                     )
                 } else {
-                    await ctx.reply(`No photo: ${plateNumber}`)
+                    await ctx.reply(
+                        `${plateNumber}`,
+                        Extra.markup(
+                            Markup.inlineKeyboard([
+                                Markup.callbackButton(
+                                    `♻️ Pakeisti ${plateNumber}`,
+                                    `UPDATE REPORT ${plateNumber}`
+                                ),
+                                Markup.callbackButton(
+                                    '❌ Pašalinti',
+                                    `REMOVE REPORT ${plateNumber}`
+                                )
+                            ])
+                        )
+                    )
                 }
             })
         } else {
-            ctx.reply('No reports for you sir')
+            ctx.reply(
+                '🔍 Pranešimų nerasta, pradėkime registruoti pranešima su /ket [AUTOMOBILIO VALSTYBINIS NUMERIS] komanda'
+            )
         }
     } else {
-        ctx.reply('Nothing to report here')
+        ctx.reply('Vartotojas nerastas.')
     }
 })
 
@@ -309,18 +325,38 @@ bot.action('Remove all reports', async ctx => {
         .catch(err => ctx.reply(err))
 })
 
-bot.action('Update report', async ctx => {
-    return ctx
-        .answerCbQuery()
-        .then(res => {
-            console.log(ctx.update, ctx.update.callback_query.message.chat.id)
-            return ctx.reply(res)
-        })
-        .catch(err => ctx.reply(err))
-})
+// bot.action('Update report', async ctx => {
+//     return ctx
+//         .answerCbQuery()
+//         .then(res => {
+//             // console.log(ctx.update, ctx.update.callback_query.message.chat.id)
+//             return ctx.reply(res)
+//         })
+//         .catch(err => ctx.reply(err))
+// })
 
 bot.on('contact', async ctx => {
-    console.log(ctx)
+    // console.log(ctx)
+})
+
+bot.action(/\UPDATE REPORT +.*/, async ctx => {
+    const plateNumber = ctx.update.callback_query.data.replace(
+        'UPDATE REPORT ',
+        ''
+    )
+    const userId = ctx.update.callback_query.message.chat.id
+    const user = await UserModel.findOne({ userId }).populate('tickets')
+    const isAlreadyRegistered = user.tickets.find(
+        ({ plateNumber: number }) => number === plateNumber
+    )
+    if (isAlreadyRegistered) {
+        bot.context.valstybinis_numeris = plateNumber
+        ctx.reply(
+            `✅ Galite atnaujinti (pridėti lokaciją, nuotraukas) ${plateNumber}`
+        )
+    } else {
+        ctx.reply(`🔍 Pranešimas ${plateNumber} nerastas.`)
+    }
 })
 
 bot.action(/\REMOVE REPORT +.*/, async ctx => {
@@ -330,6 +366,9 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
     )
     const userId = ctx.update.callback_query.message.chat.id
     const user = await UserModel.findOne({ userId }).populate('tickets')
+    const isAlreadyRegistered = user.tickets.find(
+        ({ plateNumber: number }) => number === plateNumber
+    )
 
     if (user) {
         return await TicketModel.deleteOne(
@@ -338,12 +377,16 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
                 user: Mongoose.Types.ObjectId(user._id)
             },
             function(err, res) {
-                if (!err) {
+                if (!err && isAlreadyRegistered) {
                     user.tickets = user.tickets.filter(
                         ({ plateNumber: number }) => number !== plateNumber
                     )
                     user.save()
-                    ctx.reply(`${plateNumber} sėkmingai pašalintas!`)
+                    ctx.reply(`${plateNumber} sėkmingai pašalintas ✅`)
+                } else if (!isAlreadyRegistered && !err) {
+                    ctx.reply(
+                        `🔍 Pranešimas apie ${plateNumber} nerastas. Turbut jis jau buvo pašalintas?`
+                    )
                 } else {
                     ctx.reply(err)
                 }
