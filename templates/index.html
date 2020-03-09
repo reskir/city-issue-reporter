@@ -28,10 +28,10 @@
             </tr>
         </thead>
         <tbody>
-            {{#each cars}}
+            {{#each tickets}}
                 <tr>
-                    <td width="400"><b>{{plateNumber}}</b></td>
-                    <td width="200">{{date}}</td>
+                    <td width="300"><b>{{plateNumber}}</b></td>
+                    <td width="200">Pranešimas registruotas: <b>{{date}}</b></td>
                     <td> 
                         <div>Adresas: {{location.address}}</div>
                         <button class="button is-primary" onClick="goToLocation('{{locationURL}}')">👉 Go to maps </button>

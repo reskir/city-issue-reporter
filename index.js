@@ -17,7 +17,7 @@ const {
 } = require('./helpers/helpers')
 
 function timeConverter(UNIX_timestamp) {
-    return new Date(UNIX_timestamp * 1000).toLocaleTimeString('lt-LT')
+    return new Date(UNIX_timestamp * 1000)
 }
 
 Mongoose.connect('mongodb://localhost/', {
@@ -224,41 +224,55 @@ bot.command('reports', async (ctx, next) => {
     if (user) {
         const tickets = await getAllUserTickets(user)
         if (tickets.length) {
-            tickets.forEach(async ({ photos, plateNumber }) => {
-                if (photos.length) {
-                    await ctx.replyWithPhoto(
-                        photos[0].file_id,
-                        Extra.markup(
-                            Markup.inlineKeyboard([
-                                Markup.callbackButton(
-                                    `♻️ Pakeisti ${plateNumber}`,
-                                    `UPDATE REPORT ${plateNumber}`
-                                ),
-                                Markup.callbackButton(
-                                    '❌ Pašalinti',
-                                    `REMOVE REPORT ${plateNumber}`
+            tickets.forEach(
+                async ({
+                    photos,
+                    plateNumber,
+                    time = 'Nėra',
+                    date,
+                    location: { address = 'Nėra' }
+                }) => {
+                    if (photos.length) {
+                        await ctx.replyWithPhoto(
+                            photos[0].file_id,
+                            Extra.load({
+                                caption: `Valstydinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${timeConverter(
+                                    date
+                                )}`
+                            })
+                                .markdown()
+                                .markup(m =>
+                                    m.inlineKeyboard([
+                                        m.callbackButton(
+                                            `♻️ Pakeisti ${plateNumber}`,
+                                            `UPDATE REPORT ${plateNumber}`
+                                        ),
+                                        m.callbackButton(
+                                            '❌ Pašalinti',
+                                            `REMOVE REPORT ${plateNumber}`
+                                        )
+                                    ])
                                 )
-                            ])
                         )
-                    )
-                } else {
-                    await ctx.reply(
-                        `${plateNumber}`,
-                        Extra.markup(
-                            Markup.inlineKeyboard([
-                                Markup.callbackButton(
-                                    `♻️ Pakeisti ${plateNumber}`,
-                                    `UPDATE REPORT ${plateNumber}`
-                                ),
-                                Markup.callbackButton(
-                                    '❌ Pašalinti',
-                                    `REMOVE REPORT ${plateNumber}`
-                                )
-                            ])
+                    } else {
+                        await ctx.reply(
+                            `${plateNumber}`,
+                            Extra.markup(
+                                Markup.inlineKeyboard([
+                                    Markup.callbackButton(
+                                        `♻️ Pakeisti ${plateNumber}`,
+                                        `UPDATE REPORT ${plateNumber}`
+                                    ),
+                                    Markup.callbackButton(
+                                        '❌ Pašalinti',
+                                        `REMOVE REPORT ${plateNumber}`
+                                    )
+                                ])
+                            )
                         )
-                    )
+                    }
                 }
-            })
+            )
         } else {
             ctx.reply(
                 '🔍 Pranešimų nerasta, pradėkime registruoti pranešima su /ket [AUTOMOBILIO VALSTYBINIS NUMERIS] komanda'
@@ -290,7 +304,7 @@ bot.command('remove', async (ctx, next) => {
                 )
             )
         } else {
-            return ctx.reply('There is no reports')
+            return ctx.reply('Pranešimų nėra.')
         }
     }
 })
@@ -392,6 +406,29 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
                 }
             }
         )
+    }
+})
+
+bot.hears(/(\d{2})+\:+(\d{2})/, async ctx => {
+    if (bot.context.valstybinis_numeris) {
+        const time = ctx.update.message.text
+        const userId = ctx.update.message.chat.id
+        await updateTicket(
+            bot.context.valstybinis_numeris,
+            { time: time },
+            async (err, res) => {
+                if (!err && res) {
+                    ctx.reply(
+                        `Laikas atnaujintas ${time} 🕜 ${bot.context.valstybinis_numeris}`
+                    )
+                }
+                if (err) {
+                    ctx.reply(err)
+                }
+            }
+        )
+    } else {
+        ctx.reply('Valstybinio numerio nėra')
     }
 })
 

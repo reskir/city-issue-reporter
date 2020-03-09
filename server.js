@@ -104,18 +104,30 @@ const start = async () => {
                     .lean()
                     .exec()
                 const data = tickets.map(ticket => {
+                    const date = new Date(ticket.date * 1000).toLocaleString(
+                        'lt-LT',
+                        {
+                            timeZone: 'Europe/Vilnius',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        }
+                    )
                     if (ticket.location) {
                         const { longitude, latitude } = ticket.location
+
                         return {
                             ...ticket,
+                            date,
                             locationURL: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
                         }
                     }
                     return {
-                        ...ticket
+                        ...ticket,
+                        date
                     }
                 })
-                return h.view('index', { cars: data.reverse() })
+                return h.view('index', { tickets: data.reverse() })
             }
         }
     })

@@ -21,6 +21,7 @@ const TicketSchema = new Schema({
         address: String
     },
     date: Date,
+    time: String,
     photos: [PhotoSchema],
     user: { type: Schema.ObjectId, ref: 'User' }
 })
