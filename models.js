@@ -17,9 +17,10 @@ const TicketSchema = new Schema({
     plateNumber: String,
     location: {
         latitude: String,
-        longitude: String
+        longitude: String,
+        address: String
     },
-    date: String,
+    date: Date,
     photos: [PhotoSchema],
     user: { type: Schema.ObjectId, ref: 'User' }
 })

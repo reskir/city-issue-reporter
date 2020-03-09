@@ -1,6 +1,7 @@
 const dotenv = require('dotenv')
 dotenv.config()
 
+const fetch = require('node-fetch')
 const Mongoose = require('mongoose')
 const Telegraf = require('telegraf')
 const Telegram = require('telegraf/telegram')
@@ -88,13 +89,12 @@ bot.command('ket', async (ctx, next) => {
                     if (!ticket) {
                         const newTicket = new TicketModel({
                             plateNumber: valstybinis_numeris,
-                            date: timeConverter(date),
+                            date: date,
                             user: Mongoose.Types.ObjectId(user._id)
                         })
-                        await newTicket.save(function(err, res) {
-                            user.tickets.push(res._id)
-                            user.save()
-                        })
+                        user.tickets.push(newTicket._id)
+                        await user.save()
+                        await newTicket.save()
                         ctx.reply(
                             `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
                         )
@@ -157,11 +157,31 @@ bot.on('location', async ctx => {
         await updateTicket(
             bot.context.valstybinis_numeris,
             { location: location },
-            (err, res) => {
+            async (err, res) => {
                 if (!err && res.ok === 1) {
-                    ctx.reply(
-                        `Lokacija įrašyta ${bot.context.valstybinis_numeris}`
-                    )
+                    const { latitude, longitude } = location
+                    const url = `https://geocode.xyz/${latitude},${longitude}?json=1`
+                    await fetch(url)
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(async data => {
+                            const address = `${data.staddress}. ${data.stnumber}`
+                            await updateTicket(
+                                bot.context.valstybinis_numeris,
+                                { location: { ...location, address } },
+                                async (err, res) => {
+                                    if (!err && res.ok === 1) {
+                                        ctx.reply(
+                                            `Lokacija įrašyta ${bot.context.valstybinis_numeris}, 📍${address}`
+                                        )
+                                    } else if (err) {
+                                        ctx.reply(err)
+                                    }
+                                }
+                            )
+                        })
+                        .catch(err => ctx.reply(err))
                 } else if (err) {
                     console.log(err)
                 }
@@ -323,7 +343,7 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
                         ({ plateNumber: number }) => number !== plateNumber
                     )
                     user.save()
-                    ctx.reply(`Removed ${plateNumber} from database!`)
+                    ctx.reply(`${plateNumber} sėkmingai pašalintas!`)
                 } else {
                     ctx.reply(err)
                 }

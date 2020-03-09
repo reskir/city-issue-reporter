@@ -1,11 +1,21 @@
+const dotenv = require('dotenv')
+dotenv.config()
 const Mongoose = require('mongoose')
 const Hapi = require('@hapi/hapi')
 const Joi = require('@hapi/joi')
 const Path = require('path')
 const Hoek = require('@hapi/hoek')
-const { TicketModel } = require('./models')
+const { TicketModel, UserModel } = require('./models')
 
-Mongoose.connect('mongodb://localhost/ketpazeidimai')
+Mongoose.connect('mongodb://localhost/', {
+    dbName: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    pass: process.env.DB_PASS,
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+    .then(() => console.log('Now connected to MongoDB!'))
+    .catch(err => console.error('Something went wrong', err))
 
 const start = async () => {
     const server = new Hapi.Server({ host: 'localhost', port: 3000 })
@@ -24,11 +34,12 @@ const start = async () => {
 
     server.route({
         method: 'POST',
-        path: '/car',
+        path: '/ticket',
         options: {
             validate: {
                 payload: Joi.object().keys({
-                    plateNumber: Joi.string().required()
+                    plateNumber: Joi.string().required(),
+                    userId: Joi.string().required()
                 }),
                 failAction: (request, h, error) => {
                     return error.isJoi
@@ -39,9 +50,30 @@ const start = async () => {
         },
         handler: async (request, h) => {
             try {
-                const car = new UserModel(request.payload)
-                const result = await car.save()
-                return h.response(result)
+                const { plateNumber, userId } = request.payload
+                const user = await UserModel.findOne({
+                    userId: userId
+                }).populate('tickets')
+
+                if (user) {
+                    const tickets = user.tickets
+                    const alreadyInclude = tickets.find(
+                        ({ plateNumber: number }) => number === plateNumber
+                    )
+
+                    if (alreadyInclude) {
+                        return h.response('Already included').code(500)
+                    }
+                    const ticket = new TicketModel({
+                        plateNumber,
+                        user: Mongoose.Types.ObjectId(user._id)
+                    })
+                    user.tickets.push(ticket._id)
+                    await user.save()
+                    const result = await ticket.save()
+                    return h.response(result)
+                }
+                return h.response('Please specify user id').code(500)
             } catch (error) {
                 return h.response(error).code(500)
             }
@@ -50,7 +82,7 @@ const start = async () => {
 
     server.route({
         method: 'GET',
-        path: '/cars',
+        path: '/tickets',
         handler: async (request, h) => {
             try {
                 const tickets = await TicketModel.find()

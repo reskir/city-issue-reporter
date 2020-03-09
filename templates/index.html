@@ -31,10 +31,9 @@
             {{#each cars}}
                 <tr>
                     <td width="400"><b>{{plateNumber}}</b></td>
-                    <td width="200">{{time}}</td>
+                    <td width="200">{{date}}</td>
                     <td> 
-                        <div>Latitude: {{location.latitude}}</div>
-                        <div>Longitude: {{location.longitude}}</div>
+                        <div>Adresas: {{location.address}}</div>
                         <button class="button is-primary" onClick="goToLocation('{{locationURL}}')">👉 Go to maps </button>
                     </td>
                     <td>
