@@ -13,9 +13,9 @@ function App() {
         setSelectValue(e.target.value)
     }
 
-    function updateStatus(ticketId) {
+    function updateStatus(ticketId, comment) {
         fetch(
-            `//localhost:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}`,
+            `//localhost:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
             {
                 method: 'POST'
             }
