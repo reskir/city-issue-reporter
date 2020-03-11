@@ -20,7 +20,7 @@ Mongoose.connect('mongodb://localhost/', {
 Mongoose.set('debug', true)
 
 const start = async () => {
-    const server = new Hapi.Server({ host: 'localhost', port: 3000 })
+    const server = new Hapi.Server({ host: 'localhost', port: 3001 })
 
     await server.register(require('@hapi/vision'))
 
@@ -85,6 +85,11 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/tickets',
+        config: {
+            cors: {
+                origin: ['http://localhost:3000']
+            }
+        },
         handler: async (request, h) => {
             try {
                 const tickets = await TicketModel.find()
@@ -152,6 +157,11 @@ const start = async () => {
     server.route({
         method: 'POST',
         path: '/updateStatus/',
+        config: {
+            cors: {
+                origin: ['http://localhost:3000']
+            }
+        },
         handler: async (request, h) => {
             const { ticketId, status } = request.query
             const ticket = await TicketModel.findOne({
@@ -172,11 +182,18 @@ const start = async () => {
             const url = new URL(
                 `https://api.telegram.org/bot${process.env.BOT_TOKEN}/${endpoint}`
             )
-
-            const params = {
-                chat_id: userId,
-                photo: photos[0].file_id,
-                caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+            let params
+            if (photos.length) {
+                params = {
+                    chat_id: userId,
+                    photo: photos[0].file_id,
+                    caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+                }
+            } else {
+                params = {
+                    chat_id: userId,
+                    text: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+                }
             }
 
             Object.keys(params).forEach(key =>

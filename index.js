@@ -84,39 +84,22 @@ bot.command('ket', async (ctx, next) => {
             .populate('tickets')
             .exec(async function(err, user) {
                 if (user) {
-                    const ticket = user.tickets.find(
-                        ({ plateNumber }) => plateNumber === valstybinis_numeris
+                    const newTicket = new TicketModel({
+                        plateNumber: valstybinis_numeris,
+                        date: timeConverter(date),
+                        user: Mongoose.Types.ObjectId(user._id),
+                        status: 'laukiama patvirtinimo'
+                    })
+                    user.tickets.push(newTicket._id)
+                    await user.save()
+                    await newTicket.save()
+                    ctx.reply(
+                        `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
                     )
-                    if (!ticket) {
-                        const newTicket = new TicketModel({
-                            plateNumber: valstybinis_numeris,
-                            date,
-                            user: Mongoose.Types.ObjectId(user._id),
-                            status: 'registruotas'
-                        })
-                        user.tickets.push(newTicket._id)
-                        await user.save()
-                        await newTicket.save()
-                        ctx.reply(
-                            `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
-                        )
-                        ctx.reply(
-                            `Įkelkite kelias 📸 kuriuose matosi automobilio valstybinis numeris`
-                        )
-                        bot.context.valstybinis_numeris = valstybinis_numeris
-                    } else if (ticket) {
-                        const { plateNumber, photos = [], time } = ticket
-                        await ctx.reply(
-                            `Automobilis ${plateNumber} jau šiandien registruotas ${time}`
-                        )
-                        if (photos.length) {
-                            ctx.replyWithPhoto(
-                                chatId,
-                                photos[0].file_id,
-                                plateNumber
-                            )
-                        }
-                    }
+                    ctx.reply(
+                        `Įkelkite kelias 📸 kuriuose matosi automobilio valstybinis numeris`
+                    )
+                    bot.context.valstybinis_numeris = valstybinis_numeris
                 } else {
                     const ticket = new TicketModel({
                         plateNumber: valstybinis_numeris,
@@ -239,39 +222,41 @@ bot.command('reports', async ctx => {
                         await ctx.replyWithPhoto(
                             photos[0].file_id,
                             Extra.load({
-                                caption: `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${timeConverter(
-                                    date
-                                )}\nStatusas: ${status.toUpperCase()}`
+                                caption: `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${date}\nStatusas: ${status.toUpperCase()}`
                             })
                                 .markdown()
-                                .markup(m =>
-                                    m.inlineKeyboard([
-                                        m.callbackButton(
-                                            `♻️ Pakeisti ${plateNumber}`,
-                                            `UPDATE REPORT ${plateNumber}`
-                                        ),
-                                        m.callbackButton(
-                                            '❌ Pašalinti',
-                                            `REMOVE REPORT ${plateNumber}`
-                                        )
-                                    ])
-                                )
+                                .markup(m => {
+                                    if (status === 'laukiama patvirtinimo') {
+                                        return m.inlineKeyboard([
+                                            m.callbackButton(
+                                                `♻️ Pakeisti ${plateNumber}`,
+                                                `UPDATE REPORT ${plateNumber}`
+                                            ),
+                                            m.callbackButton(
+                                                '❌ Pašalinti',
+                                                `REMOVE REPORT ${plateNumber}`
+                                            )
+                                        ])
+                                    }
+                                })
                         )
                     } else {
                         await ctx.reply(
-                            `${plateNumber}`,
-                            Extra.markup(
-                                Markup.inlineKeyboard([
-                                    Markup.callbackButton(
-                                        `♻️ Pakeisti ${plateNumber}`,
-                                        `UPDATE REPORT ${plateNumber}`
-                                    ),
-                                    Markup.callbackButton(
-                                        '❌ Pašalinti',
-                                        `REMOVE REPORT ${plateNumber}`
-                                    )
-                                ])
-                            )
+                            `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${date}\nStatusas: ${status.toUpperCase()}`,
+                            status === 'laukiama patvirtinimo'
+                                ? Extra.markup(
+                                      Markup.inlineKeyboard([
+                                          Markup.callbackButton(
+                                              `♻️ Pakeisti ${plateNumber}`,
+                                              `UPDATE REPORT ${plateNumber}`
+                                          ),
+                                          Markup.callbackButton(
+                                              '❌ Pašalinti',
+                                              `REMOVE REPORT ${plateNumber}`
+                                          )
+                                      ])
+                                  )
+                                : null
                         )
                     }
                 }
@@ -342,20 +327,6 @@ bot.action('Remove all reports', async ctx => {
         .catch(err => ctx.reply(err))
 })
 
-// bot.action('Update report', async ctx => {
-//     return ctx
-//         .answerCbQuery()
-//         .then(res => {
-//             // console.log(ctx.update, ctx.update.callback_query.message.chat.id)
-//             return ctx.reply(res)
-//         })
-//         .catch(err => ctx.reply(err))
-// })
-
-bot.on('contact', async ctx => {
-    // console.log(ctx)
-})
-
 bot.action(/\UPDATE REPORT +.*/, async ctx => {
     const plateNumber = ctx.update.callback_query.data.replace(
         'UPDATE REPORT ',
@@ -366,11 +337,16 @@ bot.action(/\UPDATE REPORT +.*/, async ctx => {
     const isAlreadyRegistered = user.tickets.find(
         ({ plateNumber: number }) => number === plateNumber
     )
-    if (isAlreadyRegistered) {
+    const isStatusWaiting = user.tickets.find(
+        ({ status }) => status === 'laukiama patvirtinimo'
+    )
+    if (isAlreadyRegistered && isStatusWaiting) {
         bot.context.valstybinis_numeris = plateNumber
         ctx.reply(
             `✅ Galite atnaujinti (pridėti lokaciją, nuotraukas) ${plateNumber}`
         )
+    } else if (!isStatusWaiting) {
+        ctx.reply(`Pranešimas ${plateNumber} negali būti keičiamas.`)
     } else {
         ctx.reply(`🔍 Pranešimas ${plateNumber} nerastas.`)
     }
@@ -387,14 +363,18 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
         ({ plateNumber: number }) => number === plateNumber
     )
 
-    if (user) {
+    const isStatusWaiting = user.tickets.find(
+        ({ status }) => status === 'laukiama patvirtinimo'
+    )
+
+    if (user && isStatusWaiting) {
         await TicketModel.deleteOne(
             {
                 plateNumber,
                 user: Mongoose.Types.ObjectId(user._id)
             },
             async function(err, res) {
-                if (!err && isAlreadyRegistered) {
+                if (!err && isAlreadyRegistered && isStatusWaiting) {
                     user.tickets = user.tickets.filter(
                         ({ plateNumber: number }) => number !== plateNumber
                     )
@@ -412,6 +392,8 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
                 }
             }
         )
+    } else if (!isStatusWaiting) {
+        ctx.reply(`Pranešimas ${plateNumber} negali būti keičiamas.`)
     }
 })
 
