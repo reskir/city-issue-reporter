@@ -163,14 +163,14 @@ const start = async () => {
             }
         },
         handler: async (request, h) => {
-            const { ticketId, status } = request.query
+            const { ticketId, status, comment = '' } = request.query
             const ticket = await TicketModel.findOne({
                 _id: Mongoose.Types.ObjectId(ticketId)
             }).populate('user')
             const userId = ticket.user.userId
-            console.log(userId)
             try {
                 ticket.status = status
+                ticket.comment = comment
                 await ticket.save().catch(e => {
                     throw new Error(e)
                 })
@@ -187,12 +187,12 @@ const start = async () => {
                 params = {
                     chat_id: userId,
                     photo: photos[0].file_id,
-                    caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+                    caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status},\n${comment}`
                 }
             } else {
                 params = {
                     chat_id: userId,
-                    text: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}`
+                    text: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}\n${comment}`
                 }
             }
 

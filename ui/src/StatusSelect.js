@@ -2,7 +2,6 @@ import React from 'react'
 
 function StatusSelect({ ticket, onChange, onSubmit }) {
     const [ticketStatus, setTicketStatus] = React.useState(ticket.status)
-    const [buttonText, setButtonText] = React.useState('Pakeisti statusą')
     const [textValue, setTextValue] = React.useState(ticket.comment)
     const ticketId = ticket._id
 
@@ -40,7 +39,7 @@ function StatusSelect({ ticket, onChange, onSubmit }) {
                             <option value="laukiama atsakymo"></option>
                             <option value="registruotas">registruotas</option>
                             <option value="nagrinėjimas">nagrinėjimas</option>
-                            <option value="atmestas">atmestas ❌</option>
+                            <option value="atmestas">atmestas</option>
                             <option value="išnagrinėtas">išnagrinėtas</option>
                         </select>
                     </div>
@@ -55,7 +54,7 @@ function StatusSelect({ ticket, onChange, onSubmit }) {
                         }}
                         disabled={buttonDisabled}
                     >
-                        {buttonText}
+                        Pakeisti statusą
                     </button>
                 </div>
             </div>

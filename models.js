@@ -34,6 +34,7 @@ const TicketSchema = new Schema({
         ],
         default: 'registruotas'
     },
+    comment: String,
     user: { type: Schema.ObjectId, ref: 'User' }
 })
 
