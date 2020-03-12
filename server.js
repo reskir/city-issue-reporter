@@ -7,7 +7,7 @@ const Joi = require('@hapi/joi')
 const { TicketModel, UserModel } = require('./models')
 const fetch = require('node-fetch')
 
-Mongoose.connect('mongodb://localhost/', {
+Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
     user: process.env.DB_USER,
     pass: process.env.DB_PASS,

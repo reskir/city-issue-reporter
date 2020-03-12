@@ -20,7 +20,7 @@ function timeConverter(UNIX_timestamp) {
     return new Date(UNIX_timestamp * 1000)
 }
 
-Mongoose.connect('mongodb://localhost/', {
+Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
     user: process.env.DB_USER,
     pass: process.env.DB_PASS,
