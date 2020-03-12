@@ -8,9 +8,7 @@ import Markup from 'telegraf/markup'
 import Extra from 'telegraf/extra'
 import { getAllUserTickets, updateTicket } from './helpers/helpers'
 
-function timeConverter(UNIX_timestamp) {
-    return new Date(UNIX_timestamp * 1000)
-}
+import { registerKet } from './src/commands/ket'
 
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
@@ -62,71 +60,7 @@ bot.command('start', async ctx => {
 })
 
 bot.command('ket', async (ctx, next) => {
-    console.log(uuidv4())
-    const { id, first_name, last_name } = ctx.message.from
-    const { date } = ctx.message
-    const message = ctx.message.text
-    const plateNumber = message.replace('/ket', '').replace(' ', '')
-    const valstybinis_numeris = plateNumber.toUpperCase()
-
-    if (valstybinis_numeris) {
-        const chatId = ctx.chat.id
-        await UserModel.findOne({
-            userId: chatId.toString()
-        })
-            .populate('tickets')
-            .exec(async function(err, user) {
-                if (user) {
-                    const newTicket = new TicketModel({
-                        plateNumber: valstybinis_numeris,
-                        date: timeConverter(date),
-                        user: Mongoose.Types.ObjectId(user._id),
-                        status: 'laukiama patvirtinimo'
-                    })
-                    user.tickets.push(newTicket._id)
-                    await user.save()
-                    await newTicket.save()
-                    ctx.reply(
-                        `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
-                    )
-                    ctx.reply(
-                        `Įkelkite kelias 📸 kuriuose matosi automobilio valstybinis numeris`
-                    )
-                    bot.context.valstybinis_numeris = valstybinis_numeris
-                } else {
-                    const ticket = new TicketModel({
-                        plateNumber: valstybinis_numeris,
-                        date
-                    })
-                    ticket.save(async function(err, res) {
-                        const user = new UserModel({
-                            userId: id,
-                            name: first_name,
-                            surname: last_name,
-                            tickets: [Mongoose.Types.ObjectId(ticket._id)]
-                        })
-                        bot.context.valstybinis_numeris = valstybinis_numeris
-                        await user.save(function(err, res) {
-                            if (!err) {
-                                ticket.user = Mongoose.Types.ObjectId(res._id)
-                                ticket.save()
-                                bot.context.pazeidimo_numeris = id
-                                ctx.reply(
-                                    `Pradedame registruoti KET pažeidimą ${valstybinis_numeris}`
-                                )
-                                ctx.reply(
-                                    `Įkelkite kelias 📸 kuriuose matosi automobilio valstybinis numeris`
-                                )
-                            } else {
-                                ctx.reply(err)
-                            }
-                        })
-                    })
-                }
-            })
-    } else {
-        ctx.reply(`rašykite "/ket VALSTYBINIS AUTOMOBILIO NUMERIS"`)
-    }
+    return await registerKet(ctx, bot)
 })
 
 bot.on('location', async ctx => {
