@@ -4,6 +4,8 @@
     "main": "index.js",
     "license": "MIT",
     "scripts": {
+        "start:prod": "babel-node -r dotenv/config server.js",
+        "telegram:prod": "babel-node -r dotenv/config index.js",
         "start": "nodemon --exec babel-node -r dotenv/config server.js",
         "telegram": "nodemon --exec babel-node -r dotenv/config index.js"
     },
