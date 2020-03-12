@@ -1,11 +1,9 @@
-const dotenv = require('dotenv')
-dotenv.config()
-const Mongoose = require('mongoose')
-const Hapi = require('@hapi/hapi')
-const Boom = require('@hapi/boom')
-const Joi = require('@hapi/joi')
-const { TicketModel, UserModel } = require('./models')
-const fetch = require('node-fetch')
+import Mongoose from 'mongoose'
+import Hapi from '@hapi/hapi'
+import Boom from '@hapi/boom'
+import Joi from '@hapi/joi'
+import fetch from 'node-fetch'
+import { TicketModel, UserModel } from './models'
 
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,

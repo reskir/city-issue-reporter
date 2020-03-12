@@ -1,4 +1,4 @@
-const Mongoose = require('mongoose')
+import Mongoose from 'mongoose'
 const Schema = Mongoose.Schema
 
 const PhotoSchema = new Schema({
@@ -38,7 +38,5 @@ const TicketSchema = new Schema({
     user: { type: Schema.ObjectId, ref: 'User' }
 })
 
-module.exports = {
-    UserModel: Mongoose.model('User', UserSchema),
-    TicketModel: Mongoose.model('Ticket', TicketSchema)
-}
+export const UserModel = Mongoose.model('User', UserSchema)
+export const TicketModel = Mongoose.model('Ticket', TicketSchema)

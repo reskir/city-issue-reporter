@@ -1,20 +1,12 @@
-const dotenv = require('dotenv')
-dotenv.config()
-
-const fetch = require('node-fetch')
-const Mongoose = require('mongoose')
-const Telegraf = require('telegraf')
-const Telegram = require('telegraf/telegram')
-const { UserModel, TicketModel } = require('./models')
-const uuid = require('uuid')
-const Markup = require('telegraf/markup')
-const Extra = require('telegraf/extra')
-const actions = require('./actions')
-const {
-    getAllUserTickets,
-    updateTicket,
-    findUserById
-} = require('./helpers/helpers')
+import fetch from 'node-fetch'
+import Mongoose from 'mongoose'
+import Telegraf from 'telegraf'
+import Telegram from 'telegraf/telegram'
+import { UserModel, TicketModel } from './models'
+import { v4 as uuidv4 } from 'uuid'
+import Markup from 'telegraf/markup'
+import Extra from 'telegraf/extra'
+import { getAllUserTickets, updateTicket } from './helpers/helpers'
 
 function timeConverter(UNIX_timestamp) {
     return new Date(UNIX_timestamp * 1000)
@@ -70,11 +62,12 @@ bot.command('start', async ctx => {
 })
 
 bot.command('ket', async (ctx, next) => {
+    console.log(uuidv4())
     const { id, first_name, last_name } = ctx.message.from
     const { date } = ctx.message
-    const valstybinis_numeris = ctx.message.text
-        .replace('/ket ', '')
-        .toUpperCase()
+    const message = ctx.message.text
+    const plateNumber = message.replace('/ket', '').replace(' ', '')
+    const valstybinis_numeris = plateNumber.toUpperCase()
 
     if (valstybinis_numeris) {
         const chatId = ctx.chat.id

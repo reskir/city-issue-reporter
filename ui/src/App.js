@@ -63,7 +63,9 @@ function App() {
                                         </span>
                                     </td>
                                     <td width="250">{ticket?.date}</td>
-                                    <td>{ticket?.location?.address}</td>
+                                    <td width="300">
+                                        {ticket?.location?.address}
+                                    </td>
                                     <td width="310">
                                         <StatusSelect
                                             ticket={ticket}
@@ -92,6 +94,15 @@ function App() {
                                                                       }
                                                                       width="200"
                                                                   />
+                                                                  <figcaption>
+                                                                      <a
+                                                                          href={
+                                                                              photo.link
+                                                                          }
+                                                                      >
+                                                                          Download
+                                                                      </a>
+                                                                  </figcaption>
                                                               </figure>
                                                           </div>
                                                       )

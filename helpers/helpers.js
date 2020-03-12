@@ -1,14 +1,14 @@
-const Mongoose = require('mongoose')
-const { TicketModel } = require('../models')
+import Mongoose from 'mongoose'
+import { TicketModel } from '../models'
 
-const getAllUserTickets = async user => {
+export const getAllUserTickets = async user => {
     const id = user._id
     return await TicketModel.find({
         user: Mongoose.Types.ObjectId(id)
     })
 }
 
-const updateTicket = async (plateNumber, params, callback) => {
+export const updateTicket = async (plateNumber, params, callback) => {
     return await TicketModel.updateOne(
         { plateNumber: plateNumber },
         { ...params },
@@ -18,12 +18,6 @@ const updateTicket = async (plateNumber, params, callback) => {
     )
 }
 
-const findUserById = async userId => {
+export const findUserById = async userId => {
     return await UserModel.findOne({ userId })
-}
-
-module.exports = {
-    getAllUserTickets,
-    updateTicket,
-    findUserById
 }
