@@ -10,6 +10,15 @@ import { getAllUserTickets, updateTicket } from './helpers/helpers'
 
 import { registerKet } from './src/commands/ket'
 
+const { BOT_TOKEN } = process.env
+
+if (!BOT_TOKEN) {
+    console.error(
+        'Seems like you forgot to pass Telegram Bot Token. I can not proceed...'
+    )
+    process.exit(1)
+}
+
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
     user: process.env.DB_USER,
@@ -27,36 +36,28 @@ const bot = new Telegraf(process.env.BOT_TOKEN, { channelMode: false })
 
 bot.command('start', async ctx => {
     const { id, first_name, last_name } = ctx.message.from
-    await UserModel.findOne(
-        {
-            userId: id
-        },
-        async function(err, user) {
-            if (err) {
-                ctx.reply(err)
-            } else {
-                if (!user) {
-                    await UserModel.create(
-                        {
-                            userId: id,
-                            name: first_name,
-                            surname: last_name,
-                            tickets: []
-                        },
-                        function(err, user) {
-                            if (!err) {
-                                ctx.reply(
-                                    `Welcome to KET_PAZEIDIMAI bot ${first_name}!`
-                                )
-                            }
-                        }
-                    )
+    const user = await UserModel.findOne({
+        userId: id
+    })
+    if (!user) {
+        UserModel.create(
+            {
+                userId: id,
+                name: first_name,
+                surname: last_name,
+                tickets: []
+            },
+            function(err) {
+                if (!err) {
+                    ctx.reply(`Sveiki prisijungę ${first_name}`)
                 } else {
-                    ctx.reply(`Welcome back ${first_name}!`)
+                    ctx.reply(err.message)
                 }
             }
-        }
-    )
+        )
+    } else {
+        ctx.reply(`Sveiki sugrižę ${first_name}!`)
+    }
 })
 
 bot.command('ket', async (ctx, next) => {

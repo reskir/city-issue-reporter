@@ -20,16 +20,6 @@ Mongoose.set('debug', true)
 const start = async () => {
     const server = new Hapi.Server({ host: 'localhost', port: 3001 })
 
-    await server.register(require('@hapi/vision'))
-
-    server.views({
-        engines: {
-            html: require('handlebars')
-        },
-        relativeTo: __dirname,
-        path: 'templates'
-    })
-
     await server.start()
 
     server.route({
@@ -85,7 +75,7 @@ const start = async () => {
         path: '/tickets',
         config: {
             cors: {
-                origin: ['http://localhost:3000']
+                origin: ['http://localhost:3000', 'http://194.5.157.133:3000']
             }
         },
         handler: async (request, h) => {
@@ -157,7 +147,7 @@ const start = async () => {
         path: '/updateStatus/',
         config: {
             cors: {
-                origin: ['http://localhost:3000']
+                origin: ['http://localhost:3000, http://194.5.157.133:3000']
             }
         },
         handler: async (request, h) => {
