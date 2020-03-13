@@ -2,7 +2,9 @@ import React from 'react'
 import { StatusSelect } from './StatusSelect'
 import 'bulma/css/bulma.css'
 
-const fetchTickets = fetch('//localhost:3001/tickets').then(res => res.json())
+const fetchTickets = fetch('//localhost:3001/getTickets').then(res =>
+    res.json()
+)
 
 function App() {
     const [data, setData] = React.useState([])

@@ -2,6 +2,8 @@ import Mongoose from 'mongoose'
 import Hapi from '@hapi/hapi'
 import Boom from '@hapi/boom'
 import Joi from '@hapi/joi'
+import Inert from '@hapi/inert'
+import Path from 'path'
 import fetch from 'node-fetch'
 import { TicketModel, UserModel } from './models'
 
@@ -19,12 +21,23 @@ Mongoose.set('debug', true)
 
 const start = async () => {
     const server = new Hapi.Server({ host: 'localhost', port: 3001 })
+    await server.register(Inert)
 
-    await server.start()
+    server.route({
+        method: 'GET',
+        path: '/{path*}',
+        handler: {
+            directory: {
+                path: Path.join(__dirname, './ui/build'),
+                listing: false,
+                index: true
+            }
+        }
+    })
 
     server.route({
         method: 'POST',
-        path: '/ticket',
+        path: '/getTicket',
         options: {
             validate: {
                 payload: Joi.object().keys({
@@ -72,7 +85,7 @@ const start = async () => {
 
     server.route({
         method: 'GET',
-        path: '/tickets',
+        path: '/getTickets',
         config: {
             cors: {
                 origin: ['http://localhost:3000', 'http://194.5.157.133:3000']
@@ -90,42 +103,42 @@ const start = async () => {
         }
     })
 
-    server.route({
-        method: 'GET',
-        path: '/',
-        config: {
-            handler: async (request, h) => {
-                const tickets = await TicketModel.find()
-                    .lean()
-                    .exec()
-                const data = tickets.map(ticket => {
-                    const date = new Date(ticket.date * 1000).toLocaleString(
-                        'lt-LT',
-                        {
-                            timeZone: 'Europe/Vilnius',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false
-                        }
-                    )
-                    if (ticket.location) {
-                        const { longitude, latitude } = ticket.location
+    // server.route({
+    //     method: 'GET',
+    //     path: '/',
+    //     config: {
+    //         handler: async (request, h) => {
+    //             const tickets = await TicketModel.find()
+    //                 .lean()
+    //                 .exec()
+    //             const data = tickets.map(ticket => {
+    //                 const date = new Date(ticket.date * 1000).toLocaleString(
+    //                     'lt-LT',
+    //                     {
+    //                         timeZone: 'Europe/Vilnius',
+    //                         hour: '2-digit',
+    //                         minute: '2-digit',
+    //                         hour12: false
+    //                     }
+    //                 )
+    //                 if (ticket.location) {
+    //                     const { longitude, latitude } = ticket.location
 
-                        return {
-                            ...ticket,
-                            date,
-                            locationURL: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-                        }
-                    }
-                    return {
-                        ...ticket,
-                        date
-                    }
-                })
-                return h.view('index', { tickets: data.reverse() })
-            }
-        }
-    })
+    //                     return {
+    //                         ...ticket,
+    //                         date,
+    //                         locationURL: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
+    //                     }
+    //                 }
+    //                 return {
+    //                     ...ticket,
+    //                     date
+    //                 }
+    //             })
+    //             return { tickets: data.reverse() }
+    //         }
+    //     }
+    // })
 
     server.route({
         method: 'GET',
@@ -213,6 +226,8 @@ const start = async () => {
             }
         }
     })
+
+    await server.start()
 }
 
 start()
