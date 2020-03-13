@@ -6,6 +6,7 @@ import Inert from '@hapi/inert'
 import Path from 'path'
 import fetch from 'node-fetch'
 import { TicketModel, UserModel } from './models'
+import { getStatusUpdateMessage } from './helpers/helpers'
 
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
@@ -88,12 +89,13 @@ const start = async () => {
         path: '/getTickets',
         config: {
             cors: {
-                origin: ['http://localhost:3000', 'http://194.5.157.133:3000']
+                origin: ['http://localhost:3000']
             }
         },
         handler: async (request, h) => {
             try {
                 const tickets = await TicketModel.find()
+                    .populate('user')
                     .lean()
                     .exec()
                 return h.response(tickets)
@@ -160,7 +162,7 @@ const start = async () => {
         path: '/updateStatus/',
         config: {
             cors: {
-                origin: ['http://localhost:3000, http://194.5.157.133:3000']
+                origin: ['http://localhost:3000']
             }
         },
         handler: async (request, h) => {
@@ -178,7 +180,7 @@ const start = async () => {
             } catch (e) {
                 return Boom.badData(e)
             }
-            const photos = ticket.photos
+            const { photos, plateNumber } = ticket
             const endpoint = photos.length ? 'sendPhoto' : 'sendMessage'
             const url = new URL(
                 `https://api.telegram.org/bot${process.env.BOT_TOKEN}/${endpoint}`
@@ -188,12 +190,20 @@ const start = async () => {
                 params = {
                     chat_id: userId,
                     photo: photos[0].file_id,
-                    caption: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status},\n${comment}`
+                    caption: getStatusUpdateMessage({
+                        plateNumber,
+                        status,
+                        comment
+                    })
                 }
             } else {
                 params = {
                     chat_id: userId,
-                    text: `Statuso atnaujinimas: pranešimas ${ticket.plateNumber} ${status}\n${comment}`
+                    text: getStatusUpdateMessage({
+                        plateNumber,
+                        status,
+                        comment
+                    })
                 }
             }
 

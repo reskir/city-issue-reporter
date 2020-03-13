@@ -6,7 +6,11 @@ import { UserModel, TicketModel } from './models'
 import { v4 as uuidv4 } from 'uuid'
 import Markup from 'telegraf/markup'
 import Extra from 'telegraf/extra'
-import { getAllUserTickets, updateTicket } from './helpers/helpers'
+import {
+    getAllUserTickets,
+    updateTicket,
+    getStatusMessage
+} from './helpers/helpers'
 
 import { registerKet } from './src/commands/ket'
 
@@ -61,6 +65,7 @@ bot.command('start', async ctx => {
 })
 
 bot.command('ket', async (ctx, next) => {
+    console.log(uuidv4())
     return await registerKet(ctx, bot)
 })
 
@@ -150,7 +155,13 @@ bot.command('reports', async ctx => {
                         await ctx.replyWithPhoto(
                             photos[0].file_id,
                             Extra.load({
-                                caption: `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${date}\nStatusas: ${status.toUpperCase()}`
+                                caption: getStatusMessage({
+                                    plateNumber,
+                                    time,
+                                    address,
+                                    date,
+                                    status
+                                })
                             })
                                 .markdown()
                                 .markup(m => {
@@ -170,7 +181,13 @@ bot.command('reports', async ctx => {
                         )
                     } else {
                         await ctx.reply(
-                            `Valstybinis numeris:${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${date}\nStatusas: ${status.toUpperCase()}`,
+                            getStatusMessage({
+                                plateNumber,
+                                time,
+                                address,
+                                date,
+                                status
+                            }),
                             status === 'laukiama patvirtinimo'
                                 ? Extra.markup(
                                       Markup.inlineKeyboard([

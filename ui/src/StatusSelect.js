@@ -1,18 +1,19 @@
 import React from 'react'
 
-function StatusSelect({ ticket, onChange, onSubmit }) {
-    const [ticketStatus, setTicketStatus] = React.useState(ticket.status)
-    const [textValue, setTextValue] = React.useState(ticket.comment)
-    const ticketId = ticket._id
+function StatusSelect({
+    ticketId,
+    status,
+    comment = null,
+    onChange,
+    onSubmit
+}) {
+    const [ticketStatus, setTicketStatus] = React.useState(status)
+    const [textValue, setTextValue] = React.useState(comment)
 
     const statuses = ['atmestas', 'registruotas']
 
-    // if (ticket.status === ticketStatus) {
-    //     setTextValue('')
-    // }
-
     const buttonDisabled =
-        ticketStatus === ticket.status ||
+        ticketStatus === status ||
         (!textValue && statuses.includes(ticketStatus))
 
     return (
@@ -22,21 +23,14 @@ function StatusSelect({ ticket, onChange, onSubmit }) {
                     <div className="select is-fullwidth">
                         <select
                             onChange={e => {
-                                // if (ticket.status !== ticketStatus) {
-                                //     setTextValue('')
-                                // } else if (ticket.comment) {
-                                //     if (ticket.comment !== textValue) {
-                                //         setTextValue(textValue)
-                                //     }
-                                // } else {
-                                //     setTextValue('')
-                                // }
                                 setTicketStatus(e.target.value)
                                 onChange(e)
                             }}
                             value={ticketStatus}
                         >
-                            <option value="laukiama atsakymo"></option>
+                            <option value="laukiama patvirtinimo">
+                                laukiama patvirtinimo
+                            </option>
                             <option value="registruotas">registruotas</option>
                             <option value="nagrinėjimas">nagrinėjimas</option>
                             <option value="atmestas">atmestas</option>
@@ -49,7 +43,7 @@ function StatusSelect({ ticket, onChange, onSubmit }) {
                         className="button is-info"
                         type="submit"
                         onClick={e => {
-                            //e.preventDefault()
+                            e.preventDefault()
                             onSubmit(ticketId, textValue)
                         }}
                         disabled={buttonDisabled}

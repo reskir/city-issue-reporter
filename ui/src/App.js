@@ -23,9 +23,13 @@ function App() {
             }
         )
             .then(res => res.json())
-            .then(data => {
-                setIsDataFetched(false)
-                setSelectValue(data.status)
+            .then(async data => {
+                await fetchTickets.then(data => {
+                    if (data) {
+                        setData(data)
+                        setSelectValue(data.status)
+                    }
+                })
             })
     }
 
@@ -48,73 +52,91 @@ function App() {
                 <table className="table is-fullwidth is-bordered">
                     <thead className="has-background-success">
                         <tr>
+                            <th>Vartotojas</th>
                             <th>Valstybinis numeris</th>
                             <th>Laikas</th>
                             <th>Lokacija</th>
-                            <th> Statusas </th>
+                            <th>Statusas</th>
                             <th>Nuotraukos</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map(ticket => {
-                            return (
-                                <tr key={ticket._id}>
-                                    <td width="150">
-                                        <span className="has-text-weight-bold">
-                                            {ticket?.plateNumber}
-                                        </span>
-                                    </td>
-                                    <td width="250">{ticket?.date}</td>
-                                    <td width="300">
-                                        {ticket?.location?.address}
-                                    </td>
-                                    <td width="310">
-                                        <StatusSelect
-                                            ticket={ticket}
-                                            onChange={handleChange}
-                                            onSubmit={updateStatus}
-                                        />
-                                    </td>
-                                    <td width="300">
-                                        <div className="columns">
-                                            {ticket?.photos.length
-                                                ? ticket.photos.map(photo => {
-                                                      return (
-                                                          <div
-                                                              key={
-                                                                  photo.file_id
-                                                              }
-                                                              className="column"
-                                                          >
-                                                              <figure className="image">
-                                                                  <img
-                                                                      src={
-                                                                          photo.link
+                        {data.map(
+                            ({
+                                _id,
+                                plateNumber,
+                                status,
+                                comment,
+                                user,
+                                photos,
+                                location,
+                                date = null
+                            }) => {
+                                return (
+                                    <tr key={_id}>
+                                        <td>{user.name}</td>
+                                        <td width="150">
+                                            <span className="has-text-weight-bold">
+                                                {plateNumber}
+                                            </span>
+                                        </td>
+                                        <td width="250">{date}</td>
+                                        <td width="300">{location?.address}</td>
+                                        <td width="340">
+                                            <StatusSelect
+                                                ticketId={_id}
+                                                status={status}
+                                                comment={comment}
+                                                onChange={handleChange}
+                                                onSubmit={updateStatus}
+                                            />
+                                        </td>
+                                        <td width="300">
+                                            <div className="columns">
+                                                {photos.length
+                                                    ? photos.map(
+                                                          ({
+                                                              file_id,
+                                                              link
+                                                          }) => {
+                                                              return (
+                                                                  <div
+                                                                      key={
+                                                                          file_id
                                                                       }
-                                                                      alt={
-                                                                          photo.link
-                                                                      }
-                                                                      width="200"
-                                                                  />
-                                                                  <figcaption>
-                                                                      <a
-                                                                          href={
-                                                                              photo.link
-                                                                          }
-                                                                      >
-                                                                          Download
-                                                                      </a>
-                                                                  </figcaption>
-                                                              </figure>
-                                                          </div>
+                                                                      className="column"
+                                                                  >
+                                                                      <figure className="image">
+                                                                          <img
+                                                                              src={
+                                                                                  link
+                                                                              }
+                                                                              alt={
+                                                                                  link
+                                                                              }
+                                                                              width="200"
+                                                                          />
+                                                                          <figcaption>
+                                                                              <a
+                                                                                  href={
+                                                                                      link
+                                                                                  }
+                                                                              >
+                                                                                  Download
+                                                                              </a>
+                                                                          </figcaption>
+                                                                      </figure>
+                                                                  </div>
+                                                              )
+                                                          }
                                                       )
-                                                  })
-                                                : null}
-                                        </div>
-                                    </td>
-                                </tr>
-                            )
-                        })}
+                                                    : null}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )
+                            }
+                        )}
                     </tbody>
                 </table>
             </>
