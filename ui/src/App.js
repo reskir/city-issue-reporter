@@ -1,5 +1,6 @@
 import React from 'react'
 import { StatusSelect } from './StatusSelect'
+import { Map } from './Map'
 import 'bulma/css/bulma.css'
 
 const fetchTickets = fetch('//localhost:3001/getTickets').then(res =>
@@ -74,15 +75,18 @@ function App() {
                             }) => {
                                 return (
                                     <tr key={_id}>
-                                        <td>{user.name}</td>
+                                        <td width="100">{user.name}</td>
                                         <td width="150">
                                             <span className="has-text-weight-bold">
                                                 {plateNumber}
                                             </span>
                                         </td>
                                         <td width="250">{date}</td>
-                                        <td width="300">{location?.address}</td>
-                                        <td width="340">
+                                        <td width="300">
+                                            <div>{location?.address}</div>
+                                            <Map {...location} />
+                                        </td>
+                                        <td width="360">
                                             <StatusSelect
                                                 ticketId={_id}
                                                 status={status}
@@ -91,7 +95,7 @@ function App() {
                                                 onSubmit={updateStatus}
                                             />
                                         </td>
-                                        <td width="300">
+                                        <td width="500">
                                             <div className="columns">
                                                 {photos.length
                                                     ? photos.map(
