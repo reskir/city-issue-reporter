@@ -30,8 +30,8 @@ export const getStatusMessage = ({
 
 export const getStatusUpdateMessage = ({ plateNumber, status, comment }) => {
     const displayComment = comment ? true : false
-    return `Pranešimas ${plateNumber}\nStatusas: ${status}\n${
-        displayComment ? `Komentaras:${comment}` : ''
+    return `Pranešimas ${plateNumber}\nStatusas: ${status.toUpperCase()}\n${
+        displayComment ? `Komentaras: ${comment}` : ''
     }`
 }
 

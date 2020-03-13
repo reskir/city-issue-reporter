@@ -16,8 +16,8 @@ const UserSchema = new Schema({
 const TicketSchema = new Schema({
     plateNumber: String,
     location: {
-        latitude: String,
-        longitude: String,
+        latitude: Number,
+        longitude: Number,
         address: String
     },
     date: Date,
