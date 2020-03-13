@@ -2,8 +2,7 @@ import React from 'react'
 
 function StatusSelect({
     ticketId,
-    status,
-    comment = null,
+    currentStatus: { status, comment },
     onChange,
     onSubmit
 }) {
@@ -23,6 +22,11 @@ function StatusSelect({
                     <div className="select is-fullwidth">
                         <select
                             onChange={e => {
+                                if (status !== e.target.value) {
+                                    setTextValue('')
+                                } else {
+                                    setTextValue(comment)
+                                }
                                 setTicketStatus(e.target.value)
                                 onChange(e)
                             }}

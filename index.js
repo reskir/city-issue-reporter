@@ -149,7 +149,7 @@ bot.command('reports', async ctx => {
                     time = 'Nėra',
                     date,
                     location: { address = 'Nėra' },
-                    status
+                    currentStatus: { status }
                 }) => {
                     if (photos.length) {
                         await ctx.replyWithPhoto(
@@ -283,7 +283,7 @@ bot.action(/\UPDATE REPORT +.*/, async ctx => {
         ({ plateNumber: number }) => number === plateNumber
     )
     const isStatusWaiting = user.tickets.find(
-        ({ status }) => status === 'laukiama patvirtinimo'
+        ({ currentStatus: { status } }) => status === 'laukiama patvirtinimo'
     )
     if (isAlreadyRegistered && isStatusWaiting) {
         bot.context.valstybinis_numeris = plateNumber
@@ -309,7 +309,7 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
     )
 
     const isStatusWaiting = user.tickets.find(
-        ({ status }) => status === 'laukiama patvirtinimo'
+        ({ currentStatus: { status } }) => status === 'laukiama patvirtinimo'
     )
 
     if (user && isStatusWaiting) {

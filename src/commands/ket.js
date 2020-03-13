@@ -24,6 +24,10 @@ export const registerKet = async (ctx, bot) => {
                         plateNumber: valstybinis_numeris,
                         date: timeConverter(date),
                         user: Mongoose.Types.ObjectId(user._id),
+                        currentStatus: {
+                            status: 'laukiama patvirtinimo',
+                            comment: ''
+                        },
                         status: 'laukiama patvirtinimo'
                     })
                     user.tickets.push(newTicket._id)

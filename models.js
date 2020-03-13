@@ -6,6 +6,23 @@ const PhotoSchema = new Schema({
     file_id: String
 })
 
+const StatusSchema = new Schema({
+    status: {
+        type: String,
+        enum: [
+            'laukiama patvirtinimo',
+            'registruotas',
+            'nagrinėjimas',
+            'išnagrinėtas',
+            'atmestas'
+        ],
+        default: 'laukiama patvirtinimo'
+    },
+    comment: {
+        type: String
+    }
+})
+
 const UserSchema = new Schema({
     userId: String,
     name: String,
@@ -23,6 +40,7 @@ const TicketSchema = new Schema({
     date: Date,
     time: String,
     photos: [PhotoSchema],
+    currentStatus: StatusSchema,
     status: {
         type: String,
         enum: [

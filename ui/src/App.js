@@ -66,8 +66,7 @@ function App() {
                             ({
                                 _id,
                                 plateNumber,
-                                status,
-                                comment,
+                                currentStatus,
                                 user,
                                 photos,
                                 location,
@@ -89,8 +88,7 @@ function App() {
                                         <td width="360">
                                             <StatusSelect
                                                 ticketId={_id}
-                                                status={status}
-                                                comment={comment}
+                                                currentStatus={currentStatus}
                                                 onChange={handleChange}
                                                 onSubmit={updateStatus}
                                             />

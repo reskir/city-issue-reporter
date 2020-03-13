@@ -18,8 +18,6 @@ Mongoose.connect(process.env.DB_URL, {
     .then(() => console.log('Now connected to MongoDB!'))
     .catch(err => console.error('Something went wrong', err))
 
-Mongoose.set('debug', true)
-
 const start = async () => {
     const server = new Hapi.Server({ host: 'localhost', port: 3001 })
     await server.register(Inert)
@@ -166,14 +164,17 @@ const start = async () => {
             }
         },
         handler: async (request, h) => {
+            console.log(request.query)
             const { ticketId, status, comment = '' } = request.query
             const ticket = await TicketModel.findOne({
                 _id: Mongoose.Types.ObjectId(ticketId)
             }).populate('user')
             const userId = ticket.user.userId
             try {
-                ticket.status = status
-                ticket.comment = comment
+                ticket.currentStatus = {
+                    status,
+                    comment
+                }
                 await ticket.save().catch(e => {
                     throw new Error(e)
                 })
