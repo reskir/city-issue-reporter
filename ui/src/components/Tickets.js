@@ -70,7 +70,8 @@ function Tickets() {
                                 photos,
                                 documents,
                                 location,
-                                date = null
+                                date = null,
+                                time
                             }) => {
                                 const files = documents.length
                                     ? documents
@@ -83,7 +84,7 @@ function Tickets() {
                                                 {plateNumber}
                                             </span>
                                         </td>
-                                        <td width="250">{date}</td>
+                                        <td width="250">{time || date}</td>
                                         <td width="300">
                                             <div>{location?.address}</div>
                                             <Map {...location} />
