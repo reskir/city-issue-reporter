@@ -8,14 +8,13 @@ export const getAllUserTickets = async user => {
     })
 }
 
-export const updateTicket = async (plateNumber, params, callback) => {
-    return await TicketModel.updateOne(
-        { plateNumber: plateNumber },
-        { ...params },
-        function(err, res) {
-            return callback(err, res)
-        }
-    )
+export const updateTicket = async (id, params, callback) => {
+    return await TicketModel.updateOne({ _id: id }, { ...params }, function(
+        err,
+        res
+    ) {
+        return callback(err, res)
+    })
 }
 
 export const getStatusMessage = ({

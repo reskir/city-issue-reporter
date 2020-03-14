@@ -35,6 +35,20 @@ const start = async () => {
     })
 
     server.route({
+        method: 'GET',
+        path: '/getUsers',
+        config: {
+            cors: {
+                origin: ['*']
+            }
+        },
+        handler: async (request, h) => {
+            const users = await UserModel.find().populate('tickets')
+            return h.response(users)
+        }
+    })
+
+    server.route({
         method: 'POST',
         path: '/getTicket',
         options: {
@@ -160,16 +174,17 @@ const start = async () => {
         path: '/updateStatus/',
         config: {
             cors: {
-                origin: ['http://localhost:3000']
+                origin: ['*']
             }
         },
         handler: async (request, h) => {
-            console.log(request.query)
             const { ticketId, status, comment = '' } = request.query
+            console.log(ticketId, status, comment)
             const ticket = await TicketModel.findOne({
                 _id: Mongoose.Types.ObjectId(ticketId)
             }).populate('user')
             const userId = ticket.user.userId
+            console.log('userId', userId)
             try {
                 ticket.currentStatus = {
                     status,
@@ -211,7 +226,6 @@ const start = async () => {
             Object.keys(params).forEach(key =>
                 url.searchParams.append(key, params[key])
             )
-
             await fetch(url)
 
             return h.response(ticket).code(200)

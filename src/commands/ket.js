@@ -5,7 +5,7 @@ function timeConverter(UNIX_timestamp) {
     return new Date(UNIX_timestamp * 1000)
 }
 
-export const registerKet = async (ctx, bot) => {
+export const registerKet = async ({ ctx, bot }) => {
     const { id, first_name, last_name } = ctx.message.from
     const { date } = ctx.message
     const message = ctx.message.text
@@ -27,9 +27,9 @@ export const registerKet = async (ctx, bot) => {
                         currentStatus: {
                             status: 'laukiama patvirtinimo',
                             comment: ''
-                        },
-                        status: 'laukiama patvirtinimo'
+                        }
                     })
+                    bot.context.uniqueId = newTicket._id
                     user.tickets.push(newTicket._id)
                     await user.save()
                     await newTicket.save()

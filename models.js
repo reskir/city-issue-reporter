@@ -41,17 +41,6 @@ const TicketSchema = new Schema({
     time: String,
     photos: [PhotoSchema],
     currentStatus: StatusSchema,
-    status: {
-        type: String,
-        enum: [
-            'laukiama patvirtinimo',
-            'registruotas',
-            'nagrinėjimas',
-            'išnagrinėtas',
-            'atmestas'
-        ],
-        default: 'registruotas'
-    },
     comment: String,
     user: { type: Schema.ObjectId, ref: 'User' }
 })
