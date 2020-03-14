@@ -24,7 +24,11 @@ export function Map(props) {
                     offsetLeft={-20}
                     offsetTop={-10}
                 >
-                    <div>📌</div>
+                    <div>
+                        <span role="img" aria-label="pointer">
+                            📌
+                        </span>
+                    </div>
                 </Marker>
             </ReactMapGL>
         )

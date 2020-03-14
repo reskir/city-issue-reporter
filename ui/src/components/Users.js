@@ -1,13 +1,14 @@
 import React from 'react'
 
-const fetchUsers = fetch('//localhost:3001/getUsers').then(res => res.json())
+const fetchUsers = () =>
+    fetch('//localhost:3001/getUsers').then(res => res.json())
 
 export default function Users() {
     const [data, setData] = React.useState([])
     const [isDataFetched, setIsDataFetched] = React.useState(false)
 
     if (!isDataFetched) {
-        fetchUsers
+        fetchUsers()
             .then(data => {
                 setIsDataFetched(true)
                 if (data) {
@@ -53,7 +54,7 @@ export default function Users() {
                                             <p className="heading">
                                                 Užregistruoti pranešimai
                                             </p>
-                                            <p className="title">
+                                            <p className="title has-text-success">
                                                 {registeredTickets.length}
                                             </p>
                                         </div>
