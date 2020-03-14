@@ -212,16 +212,17 @@ const start = async () => {
                 status,
                 comment
             })
+
             let endpoint
             let params
             if (photos.length) {
                 endpoint = 'sendPhoto'
                 params = {
                     chat_id: userId,
-                    document: photos[0].file_id,
+                    photo: photos[0].file_id,
                     caption: message
                 }
-            } else if (documents.length) {
+            } else if (documents.length && !photos.length) {
                 endpoint = 'sendDocument'
                 params = {
                     chat_id: userId,

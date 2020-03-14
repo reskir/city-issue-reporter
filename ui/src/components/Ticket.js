@@ -10,7 +10,6 @@ const fetchTicket = id => {
 
 export default function Ticket() {
     const [ticket, setTicket] = useState(null)
-    const [status, setStatus] = useState(null)
     const [modal, showModal] = useState(false)
     const [selectValue, setSelectValue] = useState('registruotas')
     const { id } = useParams()
@@ -30,7 +29,7 @@ export default function Ticket() {
             .then(data => {
                 fetchTicket(ticketId).then(ticket => {
                     if (ticket) {
-                        setStatus(ticket.currentStatus.status)
+                        setTicket(ticket)
                         setSelectValue(ticket.currentStatus.status)
                     }
                 })
@@ -39,7 +38,6 @@ export default function Ticket() {
     if (!ticket)
         fetchTicket(id).then(ticket => {
             setTicket(ticket)
-            setStatus(ticket.currentStatus.status)
         })
 
     if (modal) {
@@ -64,8 +62,16 @@ export default function Ticket() {
     }
 
     if (ticket) {
-        const { location, plateNumber, date, time, photos, documents } = ticket
-        const files = documents.length ? documents : photos
+        const {
+            location,
+            plateNumber,
+            date,
+            time,
+            photos,
+            documents,
+            currentStatus: { status }
+        } = ticket
+        const files = [...documents, ...photos]
         const data = new Date(time || date).toLocaleString('lt-LT', {
             timeZone: 'Europe/Vilnius'
         })
