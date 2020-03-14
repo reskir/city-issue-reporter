@@ -11,7 +11,10 @@ function StatusSelect({
 
     const statuses = ['atmestas', 'registruotas']
 
-    const buttonDisabled = !textValue && statuses.includes(ticketStatus)
+    const buttonDisabled =
+        (!textValue && statuses.includes(ticketStatus)) ||
+        !ticketStatus ||
+        ticketStatus === status
 
     return (
         <form>

@@ -179,12 +179,10 @@ const start = async () => {
         },
         handler: async (request, h) => {
             const { ticketId, status, comment = '' } = request.query
-            console.log(ticketId, status, comment)
             const ticket = await TicketModel.findOne({
                 _id: Mongoose.Types.ObjectId(ticketId)
             }).populate('user')
             const userId = ticket.user.userId
-            console.log('userId', userId)
             try {
                 ticket.currentStatus = {
                     status,
@@ -196,36 +194,42 @@ const start = async () => {
             } catch (e) {
                 return Boom.badData(e)
             }
-            const { photos, plateNumber } = ticket
-            const endpoint = photos.length ? 'sendPhoto' : 'sendMessage'
-            const url = new URL(
-                `https://api.telegram.org/bot${process.env.BOT_TOKEN}/${endpoint}`
-            )
+            const { photos, plateNumber, documents } = ticket
+            const message = getStatusUpdateMessage({
+                plateNumber,
+                status,
+                comment
+            })
+            let endpoint
             let params
             if (photos.length) {
+                endpoint = 'sendPhoto'
                 params = {
                     chat_id: userId,
-                    photo: photos[0].file_id,
-                    caption: getStatusUpdateMessage({
-                        plateNumber,
-                        status,
-                        comment
-                    })
+                    document: photos[0].file_id,
+                    caption: message
+                }
+            } else if (documents.length) {
+                endpoint = 'sendDocument'
+                params = {
+                    chat_id: userId,
+                    document: documents[0].file_id,
+                    caption: message
                 }
             } else {
+                endpoint = 'sendMessage'
                 params = {
                     chat_id: userId,
-                    text: getStatusUpdateMessage({
-                        plateNumber,
-                        status,
-                        comment
-                    })
+                    text: message
                 }
             }
 
-            Object.keys(params).forEach(key =>
-                url.searchParams.append(key, params[key])
+            const url = new URL(
+                `https://api.telegram.org/bot${process.env.BOT_TOKEN}/${endpoint}`
             )
+            Object.keys(params).forEach(key => {
+                url.searchParams.append(key, params[key])
+            })
             await fetch(url)
 
             return h.response(ticket).code(200)

@@ -40,6 +40,7 @@ const TicketSchema = new Schema({
     date: Date,
     time: String,
     photos: [PhotoSchema],
+    documents: [PhotoSchema],
     currentStatus: StatusSchema,
     comment: String,
     user: { type: Schema.ObjectId, ref: 'User' }

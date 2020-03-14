@@ -24,11 +24,6 @@ if (!BOT_TOKEN) {
     process.exit(1)
 }
 
-function isEmpty(obj) {
-    console.log(Object.keys(obj))
-    return Object.keys(obj).length === 0
-}
-
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
     user: process.env.DB_USER,
@@ -75,14 +70,14 @@ bot.command('ket', async (ctx, next) => {
 bot.on('document', async ctx => {
     const type = ctx.update.message.document.mime_type
     if (bot.context.uniqueId && type.includes('image')) {
-        const chatId = ctx.update.message.id
+        const chatId = ctx.update.message.chat.id
         const file_id = ctx.update.message.document.file_id
         const { file_path } = await telegram.getFile(file_id)
         const fileURL = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`
         const ticket = await TicketModel.findOne({
             _id: bot.context.uniqueId
         })
-        ticket.photos.push({
+        ticket.documents.push({
             link: fileURL,
             file_id
         })
@@ -100,17 +95,31 @@ bot.on('document', async ctx => {
                     const result = parser.parse()
                     const {
                         GPSLatitude: latitude,
-                        GPSLongitude: longitude
+                        GPSLongitude: longitude,
+                        DateTimeOriginal: time
                     } = result.tags
                     if (latitude && longitude) {
                         ticket.location = {
                             latitude,
                             longitude
                         }
-                        await ticket.save((err, res) => {
+                        ticket.time = new Date(time * 1000)
+                        await ticket.save(async (err, res) => {
                             if (!err) {
                                 ctx.reply(
-                                    `Atnaujinta lokacija ${ticket.plateNumber} `
+                                    `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
+                                )
+                                await telegram.sendLocation(
+                                    chatId,
+                                    latitude,
+                                    longitude
+                                )
+                                ctx.reply(
+                                    `🕓 Pridėtas pranešimo laikas: ${new Date(
+                                        time * 1000
+                                    ).toLocaleString('lt-LT', {
+                                        timeZone: 'Europe/Vilnius'
+                                    })}`
                                 )
                             }
                         })

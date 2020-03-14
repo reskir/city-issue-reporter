@@ -68,9 +68,13 @@ function Tickets() {
                                 currentStatus,
                                 user,
                                 photos,
+                                documents,
                                 location,
                                 date = null
                             }) => {
+                                const files = documents.length
+                                    ? documents
+                                    : photos
                                 return (
                                     <tr key={_id}>
                                         <td width="100">{user.name}</td>
@@ -94,8 +98,8 @@ function Tickets() {
                                         </td>
                                         <td width="500">
                                             <div className="columns">
-                                                {photos.length
-                                                    ? photos.map(
+                                                {files.length
+                                                    ? files.map(
                                                           ({
                                                               file_id,
                                                               link
