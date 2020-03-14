@@ -98,6 +98,21 @@ const start = async () => {
 
     server.route({
         method: 'GET',
+        path: '/getTicket/{id}',
+        config: {
+            cors: {
+                origin: ['http://localhost:3000']
+            }
+        },
+        handler: async (request, h) => {
+            const id = request.params.id
+            const ticket = await TicketModel.findById(id)
+            return ticket
+        }
+    })
+
+    server.route({
+        method: 'GET',
         path: '/getTickets',
         config: {
             cors: {
@@ -106,10 +121,7 @@ const start = async () => {
         },
         handler: async (request, h) => {
             try {
-                const tickets = await TicketModel.find()
-                    .populate('user')
-                    .lean()
-                    .exec()
+                const tickets = await TicketModel.find({})
                 return h.response(tickets)
             } catch (error) {
                 return h.response(error).code(500)

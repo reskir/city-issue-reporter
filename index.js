@@ -212,15 +212,20 @@ bot.command('reports', async ctx => {
                 async ({
                     _id,
                     photos,
+                    documents,
                     plateNumber,
                     time = 'Nėra',
                     date,
                     location: { address = 'Nėra' },
                     currentStatus: { status }
                 }) => {
-                    if (photos.length) {
-                        await ctx.replyWithPhoto(
-                            photos[0].file_id,
+                    if (photos.length || documents.length) {
+                        const replyOption = documents.length
+                            ? 'replyWithDocument'
+                            : 'replyWithPhoto'
+                        const files = documents.length ? documents : photos
+                        await ctx[replyOption](
+                            files[0].file_id,
                             Extra.load({
                                 caption: getStatusMessage({
                                     plateNumber,

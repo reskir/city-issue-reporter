@@ -1,27 +1,42 @@
 import React from 'react'
 import Tickets from './components/Tickets'
 import Users from './components/Users'
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom'
+import Ticket from './components/Ticket'
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    NavLink
+} from 'react-router-dom'
 import './App.scss'
 
 export default function App() {
     return (
         <Router>
             <div>
-                <nav className="navbar">
-                    <div className="navbar-menu">
-                        <ul className="navbar-start">
-                            <li className="navbar-item">
-                                <Link to="/">Pagrindinis</Link>
-                            </li>
-                            <li className="navbar-item">
-                                <Link to="/tickets">Pažeidimai</Link>
-                            </li>
-                            <li className="navbar-item">
-                                <Link to="/users">Vartotojai</Link>
-                            </li>
-                        </ul>
-                    </div>
+                <nav className="tabs">
+                    <ul>
+                        <li>
+                            <NavLink
+                                activeStyle={{
+                                    color: 'red'
+                                }}
+                                to="/tickets"
+                            >
+                                Pažeidimai
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink
+                                activeStyle={{
+                                    color: 'red'
+                                }}
+                                to="/users"
+                            >
+                                Vartotojai
+                            </NavLink>
+                        </li>
+                    </ul>
                 </nav>
 
                 {/* A <Switch> looks through its children <Route>s and
@@ -33,9 +48,7 @@ export default function App() {
                     <Route path="/users">
                         <Users />
                     </Route>
-                    <Route path="/">
-                        <Tickets />
-                    </Route>
+                    <Route path="/:id" children={<Ticket />} />
                 </Switch>
             </div>
         </Router>

@@ -1,0 +1,5 @@
+export const REGISTERED = 'registruotas'
+export const WAITING_FOR_REPLY = 'laukiama atsakymo'
+export const DECLINED = 'atmestas'
+export const COMPLETED = 'išnagrinėtas'
+export const DOING = 'nagrinėjimas'
