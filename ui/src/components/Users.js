@@ -21,8 +21,7 @@ export default function Users() {
     if (data.length) {
         return (
             <div className="container">
-                {data.map(({ name, surname = '', tickets, _id }) => {
-                    console.log(tickets)
+                {data.map(({ name, tickets, _id }) => {
                     const registeredTickets = tickets.filter(
                         ({ currentStatus }) =>
                             currentStatus.status === 'registruotas'

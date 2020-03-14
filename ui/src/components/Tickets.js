@@ -9,8 +9,6 @@ function Tickets() {
     const [data, setData] = React.useState([])
     const [isDataFetched, setIsDataFetched] = React.useState(false)
 
-    console.count(isDataFetched, data)
-
     if (!isDataFetched) {
         fetchTickets
             .then(async data => {
