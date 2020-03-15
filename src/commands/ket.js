@@ -1,9 +1,6 @@
 import Mongoose from 'mongoose'
 import { TicketModel, UserModel } from '../../models'
-
-function timeConverter(UNIX_timestamp) {
-    return new Date(UNIX_timestamp * 1000)
-}
+import { timeConverter } from '../../helpers/helpers'
 
 export const registerKet = async ({ ctx, bot }) => {
     const { id, first_name, last_name } = ctx.message.from

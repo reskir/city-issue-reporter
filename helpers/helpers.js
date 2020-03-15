@@ -1,6 +1,12 @@
 import Mongoose from 'mongoose'
 import { TicketModel } from '../models'
 
+export function timeConverter(date) {
+    return new Date(date).toLocaleString('lt-LT', {
+        timeZone: 'Europe/Vilnius'
+    })
+}
+
 export const getAllUserTickets = async user => {
     const id = user._id
     return await TicketModel.find({
@@ -24,7 +30,9 @@ export const getStatusMessage = ({
     date,
     status
 }) => {
-    return `Valstybinis numeris: ${plateNumber}\nLaikas: ${time}\nVieta: ${address}\nUžregistruotas: ${date}\nStatusas: ${status.toUpperCase()}`
+    const data = timeConverter(time || date)
+    const registered = timeConverter(date)
+    return `Valstybinis numeris: ${plateNumber}\nLaikas: ${data}\nVieta: ${address}\nUžregistruotas: ${registered}\nStatusas: ${status.toUpperCase()}`
 }
 
 export const getStatusUpdateMessage = ({ plateNumber, status, comment }) => {

@@ -214,7 +214,7 @@ bot.command('reports', async ctx => {
                     photos,
                     documents,
                     plateNumber,
-                    time = 'Nėra',
+                    time,
                     date,
                     location: { address = 'Nėra' },
                     currentStatus: { status }
