@@ -4,7 +4,7 @@ import ReactMapGL, { Marker } from 'react-map-gl'
 export function Map(props) {
     const { latitude, longitude } = props
     const [viewport, setViewport] = useState({
-        width: 800,
+        width: '100%',
         height: 400,
         latitude: latitude,
         longitude: longitude,

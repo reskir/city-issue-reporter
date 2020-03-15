@@ -24,51 +24,64 @@ const start = async () => {
         debug: { request: ['error'] },
         routes: {
             files: {
-                relativeTo: Path.join(__dirname, './ui/build/'),
+                relativeTo: Path.join(__dirname, './ui/build/')
             }
         }
     })
     await server.register(Inert)
 
+    // server.route({
+    //     method: 'GET',
+    //     path: '/{param*}',
+    //     config: {
+    //         log: {
+    //             collect: true
+    //         },
+    //         cors: {
+    //             origin: ['*']
+    //         },
+    //     },
+    //     handler: {
+    //         directory: {
+    //             path: '.',
+    //             redirectToSlash: true,
+    //             index: true,
+    //             listing: true,
+    //         }
+    //     }
+    // })
+
     server.route({
         method: 'GET',
         path: '/{param*}',
         config: {
-            log: {
-                collect: true
-            },
             cors: {
                 origin: ['*']
-            },
+            }
+        },
+        handler(request, h) {
+            if (request.path.includes('manifest')) {
+                return h.file(
+                    Path.join(__dirname, `./ui/build/${request.path}`)
+                )
+            }
+            return h
+                .file(Path.join(__dirname, './ui/build/index.html'))
+                .code(200)
+        }
+    })
+
+    server.route({
+        method: 'GET',
+        path: '/static/{param*}',
+        config: {
+            cors: {
+                origin: ['*']
+            }
         },
         handler: {
             directory: {
-                path: '.',
-                redirectToSlash: true,
-                index: true,
-                listing: true,
-            }
-        }
-    })
-
-    server.route({
-        method: 'GET',
-        path: '/users/{param*}',
-        handler: {
-            directory: {
-                path: Path.join(__dirname, './ui/build/index.html'),
-                listing: true,
-            }
-        }
-    })
-
-    server.route({
-        method: 'GET',
-        path: '/tickets/{param*}',
-        handler: {
-            directory: {
-                path: Path.join(__dirname, './ui/build/index.html'),
-                listing: true,
+                path: Path.join(__dirname, './ui/build/static/')
             }
         }
     })
