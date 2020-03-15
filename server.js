@@ -120,43 +120,6 @@ const start = async () => {
         }
     })
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/',
-    //     config: {
-    //         handler: async (request, h) => {
-    //             const tickets = await TicketModel.find()
-    //                 .lean()
-    //                 .exec()
-    //             const data = tickets.map(ticket => {
-    //                 const date = new Date(ticket.date * 1000).toLocaleString(
-    //                     'lt-LT',
-    //                     {
-    //                         timeZone: 'Europe/Vilnius',
-    //                         hour: '2-digit',
-    //                         minute: '2-digit',
-    //                         hour12: false
-    //                     }
-    //                 )
-    //                 if (ticket.location) {
-    //                     const { longitude, latitude } = ticket.location
-
-    //                     return {
-    //                         ...ticket,
-    //                         date,
-    //                         locationURL: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
-    //                     }
-    //                 }
-    //                 return {
-    //                     ...ticket,
-    //                     date
-    //                 }
-    //             })
-    //             return { tickets: data.reverse() }
-    //         }
-    //     }
-    // })
-
     server.route({
         method: 'POST',
         path: '/updateStatus/',
