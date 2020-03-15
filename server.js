@@ -25,6 +25,11 @@ const start = async () => {
     server.route({
         method: 'GET',
         path: '/{path*}',
+        config: {
+            cors: {
+                origin: ['*']
+            }
+        },
         handler: {
             directory: {
                 path: Path.join(__dirname, './ui/build'),
@@ -48,60 +53,65 @@ const start = async () => {
         }
     })
 
-    server.route({
-        method: 'POST',
-        path: '/getTicket',
-        options: {
-            validate: {
-                payload: Joi.object().keys({
-                    plateNumber: Joi.string().required(),
-                    userId: Joi.string().required()
-                }),
-                failAction: (request, h, error) => {
-                    return error.isJoi
-                        ? h.response(error.details[0]).takeover()
-                        : h.response(error).takeover()
-                }
-            }
-        },
-        handler: async (request, h) => {
-            try {
-                const { plateNumber, userId } = request.payload
-                const user = await UserModel.findOne({
-                    userId: userId
-                }).populate('tickets')
+    // server.route({
+    //     method: 'POST',
+    //     path: '/getTicket',
+    //     config: {
+    //         cors: {
+    //             origin: ['*']
+    //         }
+    //     },
+    //     options: {
+    //         validate: {
+    //             payload: Joi.object().keys({
+    //                 plateNumber: Joi.string().required(),
+    //                 userId: Joi.string().required()
+    //             }),
+    //             failAction: (request, h, error) => {
+    //                 return error.isJoi
+    //                     ? h.response(error.details[0]).takeover()
+    //                     : h.response(error).takeover()
+    //             }
+    //         }
+    //     },
+    //     handler: async (request, h) => {
+    //         try {
+    //             const { plateNumber, userId } = request.payload
+    //             const user = await UserModel.findOne({
+    //                 userId: userId
+    //             }).populate('tickets')
 
-                if (user) {
-                    const tickets = user.tickets
-                    const alreadyInclude = tickets.find(
-                        ({ plateNumber: number }) => number === plateNumber
-                    )
+    //             if (user) {
+    //                 const tickets = user.tickets
+    //                 const alreadyInclude = tickets.find(
+    //                     ({ plateNumber: number }) => number === plateNumber
+    //                 )
 
-                    if (alreadyInclude) {
-                        return h.response('Already included').code(500)
-                    }
-                    const ticket = new TicketModel({
-                        plateNumber,
-                        user: Mongoose.Types.ObjectId(user._id)
-                    })
-                    user.tickets.push(ticket._id)
-                    await user.save()
-                    const result = await ticket.save()
-                    return h.response(result)
-                }
-                return h.response('Please specify user id').code(500)
-            } catch (error) {
-                return h.response(error).code(500)
-            }
-        }
-    })
+    //                 if (alreadyInclude) {
+    //                     return h.response('Already included').code(500)
+    //                 }
+    //                 const ticket = new TicketModel({
+    //                     plateNumber,
+    //                     user: Mongoose.Types.ObjectId(user._id)
+    //                 })
+    //                 user.tickets.push(ticket._id)
+    //                 await user.save()
+    //                 const result = await ticket.save()
+    //                 return h.response(result)
+    //             }
+    //             return h.response('Please specify user id').code(500)
+    //         } catch (error) {
+    //             return h.response(error).code(500)
+    //         }
+    //     }
+    // })
 
     server.route({
         method: 'GET',
         path: '/getTicket/{id}',
         config: {
             cors: {
-                origin: ['http://localhost:3000']
+                origin: ['*']
             }
         },
         handler: async (request, h) => {
@@ -116,7 +126,7 @@ const start = async () => {
         path: '/getTickets',
         config: {
             cors: {
-                origin: ['http://localhost:3000']
+                origin: ['*']
             }
         },
         handler: async (request, h) => {
