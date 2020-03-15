@@ -19,22 +19,56 @@ Mongoose.connect(process.env.DB_URL, {
     .catch(err => console.error('Something went wrong', err))
 
 const start = async () => {
-    const server = new Hapi.Server({ host: 'localhost', port: 3001 })
+    const server = new Hapi.Server({
+        port: 3001,
+        debug: { request: ['error'] },
+        routes: {
+            files: {
+                relativeTo: Path.join(__dirname, './ui/build/'),
+            }
+        }
+    })
     await server.register(Inert)
 
     server.route({
         method: 'GET',
-        path: '/{path*}',
+        path: '/{param*}',
         config: {
+            log: {
+                collect: true
+            },
             cors: {
                 origin: ['*']
-            }
+            },
         },
         handler: {
             directory: {
-                path: Path.join(__dirname, './ui/build'),
-                listing: false,
-                index: true
+                path: '.',
+                redirectToSlash: true,
+                index: true,
+                listing: true,
+            }
+        }
+    })
+
+    server.route({
+        method: 'GET',
+        path: '/users/{param*}',
+        handler: {
+            directory: {
+                path: Path.join(__dirname, './ui/build/index.html'),
+                listing: true,
+            }
+        }
+    })
+
+    server.route({
+        method: 'GET',
+        path: '/tickets/{param*}',
+        handler: {
+            directory: {
+                path: Path.join(__dirname, './ui/build/index.html'),
+                listing: true,
             }
         }
     })
@@ -52,59 +86,6 @@ const start = async () => {
             return h.response(users)
         }
     })
-
-    // server.route({
-    //     method: 'POST',
-    //     path: '/getTicket',
-    //     config: {
-    //         cors: {
-    //             origin: ['*']
-    //         }
-    //     },
-    //     options: {
-    //         validate: {
-    //             payload: Joi.object().keys({
-    //                 plateNumber: Joi.string().required(),
-    //                 userId: Joi.string().required()
-    //             }),
-    //             failAction: (request, h, error) => {
-    //                 return error.isJoi
-    //                     ? h.response(error.details[0]).takeover()
-    //                     : h.response(error).takeover()
-    //             }
-    //         }
-    //     },
-    //     handler: async (request, h) => {
-    //         try {
-    //             const { plateNumber, userId } = request.payload
-    //             const user = await UserModel.findOne({
-    //                 userId: userId
-    //             }).populate('tickets')
-
-    //             if (user) {
-    //                 const tickets = user.tickets
-    //                 const alreadyInclude = tickets.find(
-    //                     ({ plateNumber: number }) => number === plateNumber
-    //                 )
-
-    //                 if (alreadyInclude) {
-    //                     return h.response('Already included').code(500)
-    //                 }
-    //                 const ticket = new TicketModel({
-    //                     plateNumber,
-    //                     user: Mongoose.Types.ObjectId(user._id)
-    //                 })
-    //                 user.tickets.push(ticket._id)
-    //                 await user.save()
-    //                 const result = await ticket.save()
-    //                 return h.response(result)
-    //             }
-    //             return h.response('Please specify user id').code(500)
-    //         } catch (error) {
-    //             return h.response(error).code(500)
-    //         }
-    //     }
-    // })
 
     server.route({
         method: 'GET',
@@ -177,21 +158,6 @@ const start = async () => {
     // })
 
     server.route({
-        method: 'GET',
-        path: '/person/{id}',
-        handler: async (request, h) => {}
-    })
-
-    server.route({
-        method: 'PUT',
-        path: '/person/{id}',
-        options: {
-            validate: {}
-        },
-        handler: async (request, h) => {}
-    })
-
-    server.route({
         method: 'POST',
         path: '/updateStatus/',
         config: {
@@ -256,26 +222,6 @@ const start = async () => {
             await fetch(url)
 
             return h.response(ticket).code(200)
-        }
-    })
-
-    server.route({
-        method: 'DELETE',
-        path: '/person/{id}',
-        handler: async (request, h) => {}
-    })
-
-    server.route({
-        method: 'GET',
-        path: '/location/',
-        handler: async (request, h) => {
-            const query = request.query
-            return {
-                location: {
-                    latitude: query.latitude,
-                    longitude: query.longitude
-                }
-            }
         }
     })
 

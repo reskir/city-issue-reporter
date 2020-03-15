@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import getTag from './helpers/getTag'
 
 const fetchTicket = id => {
-    return fetch(`//localhost:3001/getTicket/${id}`).then(res => res.json())
+    return fetch(`//${process.env.REACT_APP_HOST}:3001/getTicket/${id}`).then(res => res.json())
 }
 
 export default function Ticket() {
@@ -20,7 +20,7 @@ export default function Ticket() {
 
     function updateStatus(ticketId, comment) {
         fetch(
-            `//localhost:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
+            `//${process.env.REACT_APP_HOST}:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
             {
                 method: 'POST'
             }

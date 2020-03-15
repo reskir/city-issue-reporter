@@ -3,7 +3,7 @@ import getTag from './helpers/getTag'
 import { Link } from 'react-router-dom'
 
 const fetchTickets = () =>
-    fetch('//localhost:3001/getTickets').then(res => {
+    fetch(`//${process.env.REACT_APP_HOST}:3001/getTickets`).then(res => {
         console.log(res)
         return res.json()
     })
@@ -15,10 +15,10 @@ function Tickets() {
     if (!isDataFetched) {
         fetchTickets()
             .then(async data => {
+                setIsDataFetched(true)
                 if (data) {
                     setData(data.reverse())
                 }
-                setIsDataFetched(true)
             })
             .catch(e => {
                 setIsDataFetched(true)
@@ -28,7 +28,7 @@ function Tickets() {
     if (data.length) {
         return (
             <div className="container">
-                <div className="columns is-mobile">
+                <div className="columns is-desktop">
                     {data.map(
                         ({
                             _id,
