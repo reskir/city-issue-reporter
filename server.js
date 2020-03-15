@@ -30,27 +30,6 @@ const start = async () => {
     })
     await server.register(Inert)
 
-    // server.route({
-    //     method: 'GET',
-    //     path: '/{param*}',
-    //     config: {
-    //         log: {
-    //             collect: true
-    //         },
-    //         cors: {
-    //             origin: ['*']
-    //         },
-    //     },
-    //     handler: {
-    //         directory: {
-    //             path: '.',
-    //             redirectToSlash: true,
-    //             index: true,
-    //             listing: true,
-    //         }
-    //     }
-    // })
-
     server.route({
         method: 'GET',
         path: '/{param*}',
