@@ -41,7 +41,7 @@ const start = async () => {
                         {
                             module: '@hapi/good-squeeze',
                             name: 'Squeeze',
-                            args: [{ log: '*', response: '*', ops: '*' }]
+                            args: [{ log: '*', response: '*' }]
                         },
                         {
                             module: '@hapi/good-console'
