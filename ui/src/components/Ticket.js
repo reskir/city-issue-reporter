@@ -114,30 +114,35 @@ export default function Ticket() {
                     </nav>
                 </div>
 
-                <div className="card margin-24 padding-24">
-                    <div className="columns is-mobile">
-                        {files.map(file => {
-                            return (
-                                <div className="column" key={file._id}>
-                                    <img
-                                        width={200}
-                                        src={file.link}
-                                        alt={file.link}
-                                    />
-                                </div>
-                            )
-                        })}
+                {files.length > 0 && (
+                    <div className="card margin-24 padding-24">
+                        <div className="columns is-mobile">
+                            {files.map(file => {
+                                return (
+                                    <div className="column" key={file._id}>
+                                        <img
+                                            width={200}
+                                            src={file.link}
+                                            alt={file.link}
+                                        />
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
-                </div>
-                <div className="card margin-24 padding-24">
-                    {location && (
-                        <>
-                            <p>{location?.address}</p>
-                            <Map {...location} />
-                        </>
-                    )}
-                    {!location && <p>Location is undefined</p>}
-                </div>
+                )}
+
+                {location && (
+                    <div className="card margin-24 padding-24">
+                        {location && (
+                            <>
+                                <p>{location?.address}</p>
+                                <Map {...location} />
+                            </>
+                        )}
+                        {!location && <p>Location is undefined</p>}
+                    </div>
+                )}
                 {updates.length > 0 && (
                     <div className="card margin-24 padding-24">
                         <h1 className="subtitle">Atnaujinimai</h1>

@@ -411,28 +411,34 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
     }
 })
 
-bot.hears(/(\d{2})+\:+(\d{2})/, async ctx => {
-    if (bot.context.uniqueId) {
-        const time = ctx.update.message.text
-        const userId = ctx.update.message.chat.id
-        await updateTicket(
-            bot.context.uniqueId,
-            { time: time },
-            async (err, res) => {
-                if (!err && res) {
-                    ctx.reply(
-                        `Laikas atnaujintas ${time} 🕜 ${bot.context.valstybinis_numeris}`
-                    )
+bot.hears(
+    [
+        /(\d{1,2})+\:+(\d{1,2})/,
+        /\d{4}.\d{1,2}.\d{1,2}/,
+        /\d{4}.\d{1,2}.\d{1,2} \d{1,2}.\d{1,2}/
+    ],
+    async ctx => {
+        if (bot.context.uniqueId) {
+            const time = ctx.update.message.text
+            await updateTicket(
+                bot.context.uniqueId,
+                { time: time },
+                async (err, res) => {
+                    if (!err && res) {
+                        ctx.reply(
+                            `Laikas atnaujintas ${time} 🕜 ${bot.context.valstybinis_numeris}`
+                        )
+                    }
+                    if (err) {
+                        ctx.reply(err)
+                    }
                 }
-                if (err) {
-                    ctx.reply(err)
-                }
-            }
-        )
-    } else {
-        ctx.reply('Valstybinio numerio nėra')
+            )
+        } else {
+            ctx.reply('Valstybinio numerio nėra')
+        }
     }
-})
+)
 
 bot.launch()
 

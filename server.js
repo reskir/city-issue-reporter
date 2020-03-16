@@ -134,7 +134,6 @@ const start = async () => {
             }
         }
     })
-
     server.route({
         method: 'POST',
         path: '/updateStatus/',
