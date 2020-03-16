@@ -12,9 +12,7 @@ function StatusSelect({
     const statuses = ['atmestas', 'registruotas']
 
     const buttonDisabled =
-        (!textValue && statuses.includes(ticketStatus)) ||
-        !ticketStatus ||
-        ticketStatus === status
+        (!textValue && statuses.includes(ticketStatus)) || !ticketStatus
 
     return (
         <form>
@@ -23,11 +21,6 @@ function StatusSelect({
                     <div className="select is-fullwidth">
                         <select
                             onChange={e => {
-                                if (status !== e.target.value) {
-                                    setTextValue('')
-                                } else {
-                                    setTextValue(comment)
-                                }
                                 setTicketStatus(e.target.value)
                                 onChange(e)
                             }}

@@ -28,7 +28,30 @@ const start = async () => {
             }
         }
     })
-    await server.register(Inert)
+    await server.register([
+        Inert,
+        {
+            plugin: require('@hapi/good'),
+            options: {
+                ops: {
+                    interval: 1000
+                },
+                reporters: {
+                    myConsoleReporter: [
+                        {
+                            module: '@hapi/good-squeeze',
+                            name: 'Squeeze',
+                            args: [{ log: '*', response: '*', ops: '*' }]
+                        },
+                        {
+                            module: '@hapi/good-console'
+                        },
+                        'stdout'
+                    ]
+                }
+            }
+        }
+    ])
 
     server.route({
         method: 'GET',
@@ -181,6 +204,7 @@ const start = async () => {
     })
 
     await server.start()
+    console.info(`Server started at ${server.info.uri}`)
 }
 
 start()

@@ -27,7 +27,7 @@ function Tickets() {
     if (data.length) {
         return (
             <div className="container">
-                <div className="columns is-desktop">
+                <div className="columns is-desktop is-multiline">
                     {data.map(
                         ({
                             _id,
@@ -44,7 +44,7 @@ function Tickets() {
                             )
                             return (
                                 <div
-                                    className="column card margin-24"
+                                    className="column is-one-quarter card margin-24"
                                     key={_id}
                                 >
                                     <div className="card-content">
@@ -54,7 +54,8 @@ function Tickets() {
                                                     {plateNumber}
                                                 </p>
                                                 <p className="has-text-grey-light">
-                                                    {getTag(status)} / {data}
+                                                    <div>{getTag(status)}</div>
+                                                    <div>{data}</div>
                                                 </p>
                                             </div>
                                         </Link>

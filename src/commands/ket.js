@@ -8,7 +8,6 @@ export const registerKet = async ({ ctx, bot }) => {
     const message = ctx.message.text
     const plateNumber = message.replace('/ket', '').replace(' ', '')
     const valstybinis_numeris = plateNumber.toUpperCase()
-
     if (valstybinis_numeris) {
         const chatId = ctx.chat.id
         await UserModel.findOne({
@@ -19,7 +18,7 @@ export const registerKet = async ({ ctx, bot }) => {
                 if (user) {
                     const newTicket = new TicketModel({
                         plateNumber: valstybinis_numeris,
-                        date: timeConverter(date),
+                        date: timeConverter(date * 1000),
                         user: Mongoose.Types.ObjectId(user._id),
                         currentStatus: {
                             status: 'laukiama patvirtinimo',

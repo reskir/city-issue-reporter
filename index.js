@@ -346,7 +346,6 @@ bot.action('Remove all reports', async ctx => {
 
 bot.action(/\UPDATE REPORT +.*/, async ctx => {
     const id = ctx.update.callback_query.data.replace('UPDATE REPORT ', '')
-    console.log(id)
     const userId = ctx.update.callback_query.message.chat.id
     const user = await UserModel.findOne({ userId }).populate('tickets')
     const isAlreadyRegistered = user.tickets.find(
@@ -436,3 +435,10 @@ bot.hears(/(\d{2})+\:+(\d{2})/, async ctx => {
 })
 
 bot.launch()
+
+process.on('SIGINT', function() {
+    Mongoose.disconect(function(err) {
+        console.log('DB disconnected!')
+        process.exit(err ? 1 : 0)
+    })
+})

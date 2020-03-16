@@ -7,10 +7,14 @@
         "start:prod": "babel-node -r dotenv/config server.js",
         "telegram:prod": "babel-node -r dotenv/config index.js",
         "start": "nodemon --exec babel-node -r dotenv/config server.js",
-        "telegram": "nodemon --exec babel-node -r dotenv/config index.js"
+        "telegram": "nodemon --exec babel-node -r dotenv/config index.js",
+        "pm2": "pm2 start pm2.config.js"
     },
     "dependencies": {
         "@hapi/boom": "^9.0.0",
+        "@hapi/good": "^9.0.0",
+        "@hapi/good-console": "^9.0.0",
+        "@hapi/good-squeeze": "^6.0.0",
         "@hapi/hapi": "^19.1.1",
         "@hapi/hoek": "^9.0.3",
         "@hapi/inert": "^6.0.1",
@@ -33,6 +37,7 @@
         "@babel/core": "^7.8.7",
         "@babel/node": "^7.8.7",
         "@babel/preset-env": "^7.8.7",
+        "@babel/register": "^7.8.6",
         "handlebars": "^4.7.3",
         "prettier": "^1.19.1"
     }
