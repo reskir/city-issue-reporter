@@ -42,6 +42,13 @@ const TicketSchema = new Schema({
     photos: [PhotoSchema],
     documents: [PhotoSchema],
     currentStatus: StatusSchema,
+    updates: [
+        {
+            status: String,
+            comment: String,
+            time: Date
+        }
+    ],
     comment: String,
     user: { type: Schema.ObjectId, ref: 'User' }
 })

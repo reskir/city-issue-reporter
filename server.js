@@ -6,7 +6,7 @@ import Inert from '@hapi/inert'
 import Path from 'path'
 import fetch from 'node-fetch'
 import { TicketModel, UserModel } from './models'
-import { getStatusUpdateMessage } from './helpers/helpers'
+import { getStatusUpdateMessage, timeConverter } from './helpers/helpers'
 
 Mongoose.connect(process.env.DB_URL, {
     dbName: process.env.DB_NAME,
@@ -41,7 +41,7 @@ const start = async () => {
                         {
                             module: '@hapi/good-squeeze',
                             name: 'Squeeze',
-                            args: [{ log: '*', response: '*' }]
+                            args: [{ log: '*', response: '*', request: '*' }]
                         },
                         {
                             module: '@hapi/good-console'
@@ -154,6 +154,11 @@ const start = async () => {
                     status,
                     comment
                 }
+                ticket.updates.push({
+                    status,
+                    comment,
+                    time: Date.now()
+                })
                 await ticket.save().catch(e => {
                     throw new Error(e)
                 })

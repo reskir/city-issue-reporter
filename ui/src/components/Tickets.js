@@ -53,10 +53,10 @@ function Tickets() {
                                                 <p className="subtitle">
                                                     {plateNumber}
                                                 </p>
-                                                <p className="has-text-grey-light">
+                                                <div className="has-text-grey-light">
                                                     <div>{getTag(status)}</div>
                                                     <div>{data}</div>
-                                                </p>
+                                                </div>
                                             </div>
                                         </Link>
                                     </div>

@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import { StatusSelect } from './StatusSelect'
 import { Map } from '../Map'
+import { Logs } from './Logs'
 import { useParams } from 'react-router-dom'
 import getTag from './helpers/getTag'
 
 const fetchTicket = id => {
-    return fetch(`//${process.env.REACT_APP_HOST}:3001/getTicket/${id}`).then(res => res.json())
+    return fetch(
+        `//${process.env.REACT_APP_HOST}:3001/getTicket/${id}`
+    ).then(res => res.json())
 }
 
 export default function Ticket() {
@@ -69,7 +72,8 @@ export default function Ticket() {
             time,
             photos,
             documents,
-            currentStatus: { status }
+            currentStatus: { status },
+            updates
         } = ticket
         const files = [...documents, ...photos]
         const data = new Date(time || date).toLocaleString('lt-LT', {
@@ -134,6 +138,12 @@ export default function Ticket() {
                     )}
                     {!location && <p>Location is undefined</p>}
                 </div>
+                {updates.length > 0 && (
+                    <div className="card margin-24 padding-24">
+                        <h1 className="subtitle">Atnaujinimai</h1>
+                        <Logs updates={updates} />
+                    </div>
+                )}
             </div>
         )
     }
