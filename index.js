@@ -105,28 +105,37 @@ bot.on('document', async ctx => {
                     GPSLongitude: longitude,
                     DateTimeOriginal: time
                 } = result.tags
+                let locationAdded = false
                 if (latitude && longitude && !ticket?.location?.latitude) {
                     ticket.location = {
                         latitude,
                         longitude
                     }
                     ticket.time = new Date(time * 1000)
-                    ctx.reply(
-                        `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
-                    )
-                    await telegram.sendLocation(chatId, latitude, longitude)
-                    ctx.reply(
-                        `🕓 Pridėtas pranešimo laikas: ${new Date(
-                            time * 1000
-                        ).toLocaleString('lt-LT', {
-                            timeZone: 'Europe/Vilnius'
-                        })}`
-                    )
+                    locationAdded = true
                 }
                 await ticket.save(async (err, res) => {
                     if (!err) {
                         ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
-                        console.log(ticket.location, latitude, longitude)
+                        if (locationAdded) {
+                            ctx.reply(
+                                `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
+                            )
+                            await telegram.sendLocation(
+                                chatId,
+                                latitude,
+                                longitude
+                            )
+                            ctx.reply(
+                                `🕓 Pridėtas pranešimo laikas: ${new Date(
+                                    time * 1000
+                                ).toLocaleString('lt-LT', {
+                                    timeZone: 'Europe/Vilnius'
+                                })}`
+                            )
+                        } else {
+                            ctx.reply('Nuotrauka neturi duomenų apie lokaciją')
+                        }
                     } else {
                         ctx.reply(err)
                     }
