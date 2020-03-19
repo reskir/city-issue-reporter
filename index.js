@@ -133,8 +133,6 @@ bot.on('document', async ctx => {
                                     timeZone: 'Europe/Vilnius'
                                 })}`
                             )
-                        } else {
-                            ctx.reply('Nuotrauka neturi duomenų apie lokaciją')
                         }
                     } else {
                         ctx.reply(err)
@@ -414,17 +412,6 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
                     await fs.rmdir(`files/${id}`, { recursive: true }, err =>
                         console.log(err)
                     )
-                    // const { photos } = isStatusWaiting
-                    // if (photos.length) {
-                    //     await photos.forEach(({ path }) => {
-                    //         fs.rmDir(path, err => {
-                    //             if (err) {
-                    //                 console.error(err)
-                    //             }
-                    //             console.log(`photo was deleted`)
-                    //         })
-                    //     })
-                    // }
 
                     user.tickets = user.tickets.filter(
                         ({ _id }) => _id.toString() !== id

@@ -1,8 +1,8 @@
 import Mongoose from 'mongoose'
 import Hapi from '@hapi/hapi'
 import Boom from '@hapi/boom'
-import Joi from '@hapi/joi'
 import Inert from '@hapi/inert'
+import fs from 'fs'
 import Path from 'path'
 import fetch from 'node-fetch'
 import { TicketModel, UserModel } from './models'
@@ -223,6 +223,40 @@ const start = async () => {
 
             await fetch(url)
 
+            return h.response(ticket).code(200)
+        }
+    })
+
+    server.route({
+        method: 'DELETE',
+        path: '/deletePhoto/',
+        config: {
+            cors: {
+                origin: ['*']
+            }
+        },
+        handler: async (request, h) => {
+            const { ticketId, photoId, filePath } = request.query
+            const ticket = await TicketModel.findOne({ _id: ticketId })
+            ticket.photos.pull(photoId)
+            await ticket.save((err, res) => {
+                if (!err) {
+                    console.log(ticket.photos.length)
+                    if (ticket.photos.length) {
+                        fs.unlink(filePath, err => {
+                            if (err) console.log(err)
+                        })
+                    } else {
+                        fs.rmdir(
+                            `files/${ticketId}`,
+                            { recursive: true },
+                            err => {
+                                if (err) console.log(err)
+                            }
+                        )
+                    }
+                }
+            })
             return h.response(ticket).code(200)
         }
     })

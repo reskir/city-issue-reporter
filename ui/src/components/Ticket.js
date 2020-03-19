@@ -21,6 +21,17 @@ export default function Ticket() {
         setSelectValue(e.target.value)
     }
 
+    function deletePhoto({ ticketId, photoId, filePath }) {
+        console.log(ticketId, photoId, filePath)
+
+        fetch(
+            `//${process.env.REACT_APP_HOST}:3001/deletePhoto/?ticketId=${ticketId}&photoId=${photoId}&filePath=${filePath}`,
+            { method: 'DELETE' }
+        )
+            .then(res => res.json())
+            .then(data => setTicket(data))
+    }
+
     function updateStatus(ticketId, comment) {
         fetch(
             `//${process.env.REACT_APP_HOST}:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
@@ -73,7 +84,8 @@ export default function Ticket() {
             photos,
             documents,
             currentStatus: { status },
-            updates
+            updates,
+            _id: ticketId
         } = ticket
         const files = [...documents, ...photos]
         const data = new Date(time || date).toLocaleString('lt-LT', {
@@ -117,10 +129,20 @@ export default function Ticket() {
                 {files.length > 0 && (
                     <div className="card margin-24 padding-24">
                         <div className="columns is-mobile">
-                            {files.map(({ path, _id }) => {
+                            {files.map(({ path, _id, file_id }) => {
                                 const src = `//${process.env.REACT_APP_HOST}:3001/${path}`
                                 return (
                                     <div className="column" key={_id}>
+                                        <button
+                                            onClick={() =>
+                                                deletePhoto({
+                                                    ticketId,
+                                                    photoId: _id,
+                                                    filePath: path
+                                                })
+                                            }
+                                            className="delete"
+                                        ></button>
                                         <a href={src}>
                                             <img
                                                 width={200}
