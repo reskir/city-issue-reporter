@@ -3,7 +3,6 @@ import Mongoose from 'mongoose'
 import Telegraf from 'telegraf'
 import Telegram from 'telegraf/telegram'
 import { UserModel, TicketModel } from './models'
-import { v4 as uuidv4 } from 'uuid'
 import Markup from 'telegraf/markup'
 import Extra from 'telegraf/extra'
 import {
@@ -13,6 +12,8 @@ import {
 } from './helpers/helpers'
 import request from 'request'
 import { registerKet } from './src/commands/ket'
+import sharp from 'sharp'
+import fs from 'fs'
 const exif = require('exif-parser')
 
 const { BOT_TOKEN } = process.env
@@ -77,60 +78,63 @@ bot.on('document', async ctx => {
         const ticket = await TicketModel.findOne({
             _id: bot.context.uniqueId
         })
-        ticket.documents.push({
-            link: fileURL,
-            file_id
-        })
-        ticket.save((err, res) => {
-            if (!err) {
-                ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
-            }
-        })
-
-        if (!ticket?.location?.latitude) {
-            await request(
-                { url: fileURL, encoding: null },
-                async (err, resp, buffer) => {
-                    const parser = exif.create(buffer)
-                    const result = parser.parse()
-                    const {
-                        GPSLatitude: latitude,
-                        GPSLongitude: longitude,
-                        DateTimeOriginal: time
-                    } = result.tags
-                    if (latitude && longitude) {
-                        ticket.location = {
-                            latitude,
-                            longitude
-                        }
-                        ticket.time = new Date(time * 1000)
-                        await ticket.save(async (err, res) => {
-                            if (!err) {
-                                ctx.reply(
-                                    `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
-                                )
-                                await telegram.sendLocation(
-                                    chatId,
-                                    latitude,
-                                    longitude
-                                )
-                                ctx.reply(
-                                    `🕓 Pridėtas pranešimo laikas: ${new Date(
-                                        time * 1000
-                                    ).toLocaleString('lt-LT', {
-                                        timeZone: 'Europe/Vilnius'
-                                    })}`
-                                )
-                            }
-                        })
-                    } else {
-                        ctx.reply(
-                            'Nuotrauka neturi informacijos apie lokaciją, prašau nurodykite patys'
-                        )
+        await request(
+            { url: fileURL, encoding: null },
+            async (err, resp, buffer) => {
+                const path = `files/${file_id}_${bot.context.uniqueId}.jpg`
+                await sharp(buffer)
+                    .jpeg({
+                        quality: 50,
+                        progressive: true
+                    })
+                    .toFile(path)
+                    .catch(e => console.log(e))
+                await ticket.photos.push({
+                    link: fileURL,
+                    file_id,
+                    path,
+                    isDocument: true
+                })
+                const parser = exif.create(buffer)
+                const result = parser.parse()
+                const {
+                    GPSLatitude: latitude,
+                    GPSLongitude: longitude,
+                    DateTimeOriginal: time
+                } = result.tags
+                if (latitude && longitude && !ticket?.location?.latitude) {
+                    ticket.location = {
+                        latitude,
+                        longitude
                     }
+                    ticket.time = new Date(time * 1000)
                 }
-            )
-        }
+                await ticket.save(async (err, res) => {
+                    if (!err) {
+                        ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
+                        if (ticket.location.latitude) {
+                            ctx.reply(
+                                `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
+                            )
+                            await telegram.sendLocation(
+                                chatId,
+                                latitude,
+                                longitude
+                            )
+                            ctx.reply(
+                                `🕓 Pridėtas pranešimo laikas: ${new Date(
+                                    time * 1000
+                                ).toLocaleString('lt-LT', {
+                                    timeZone: 'Europe/Vilnius'
+                                })}`
+                            )
+                        }
+                    } else {
+                        ctx.reply(err)
+                    }
+                })
+            }
+        )
     } else {
         ctx.reply('Pradžiai įveskit /ket [automobilio valstybinis numeris]')
     }
@@ -182,16 +186,29 @@ bot.on('photo', async ctx => {
         const photos = ctx.message.photo
         const fileId = ctx.message.photo[photos.length - 1].file_id
         const link = await telegram.getFileLink(fileId)
-        await updateTicket(
-            bot.context.uniqueId,
-            { $addToSet: { photos: { link, file_id: fileId } } },
-            (err, res) => {
-                if (!err && res.ok === 1) {
-                    ctx.reply(
-                        `✅ Nuotrauka įrašyta ${bot.context.valstybinis_numeris}`
+        await request(
+            { url: link, encoding: null },
+            async (err, resp, buffer) => {
+                if (!err && resp) {
+                    await updateTicket(
+                        bot.context.uniqueId,
+                        {
+                            $addToSet: {
+                                photos: { link, file_id: fileId }
+                            }
+                        },
+                        (err, res) => {
+                            if (!err && res.ok === 1) {
+                                ctx.reply(
+                                    `✅ Nuotrauka įrašyta ${bot.context.valstybinis_numeris}`
+                                )
+                            } else if (err) {
+                                console.log(err)
+                            }
+                        }
                     )
-                } else if (err) {
-                    console.log(err)
+                } else {
+                    ctx.reply(err)
                 }
             }
         )
@@ -212,20 +229,19 @@ bot.command('reports', async ctx => {
                 async ({
                     _id,
                     photos,
-                    documents,
                     plateNumber,
                     time,
                     date,
                     location: { address = 'Nėra' },
                     currentStatus: { status }
                 }) => {
-                    if (photos.length || documents.length) {
-                        const replyOption = documents.length
+                    if (photos.length) {
+                        const isDocument = photos[0].isDocument
+                        const replyOption = isDocument
                             ? 'replyWithDocument'
                             : 'replyWithPhoto'
-                        const files = documents.length ? documents : photos
                         await ctx[replyOption](
-                            files[0].file_id,
+                            photos[0].file_id,
                             Extra.load({
                                 caption: getStatusMessage({
                                     plateNumber,
@@ -250,7 +266,7 @@ bot.command('reports', async ctx => {
                                         ])
                                     }
                                 })
-                        )
+                        ).catch(e => ctx.reply(e))
                     } else {
                         await ctx.reply(
                             getStatusMessage({
@@ -379,7 +395,6 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
     const isStatusWaiting = user.tickets.find(
         ({ currentStatus: { status } }) => status === 'laukiama patvirtinimo'
     )
-
     if (user && isStatusWaiting) {
         await TicketModel.deleteOne(
             {
@@ -389,6 +404,17 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
             async function(err, res) {
                 if (!err && isAlreadyRegistered && isStatusWaiting) {
                     const { plateNumber } = isAlreadyRegistered
+                    const { photos } = isStatusWaiting
+                    if (photos.length) {
+                        await photos.forEach(({ path }) => {
+                            fs.unlink(path, err => {
+                                if (err) {
+                                    console.error(err)
+                                }
+                            })
+                        })
+                    }
+
                     user.tickets = user.tickets.filter(
                         ({ _id }) => _id.toString() !== id
                     )
@@ -407,7 +433,7 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
             }
         )
     } else if (!isStatusWaiting) {
-        ctx.reply(`Pranešimas ${plateNumber} negali būti keičiamas.`)
+        ctx.reply(`Pranešimas negali būti keičiamas.`)
     }
 })
 
@@ -443,7 +469,7 @@ bot.hears(
 bot.launch()
 
 process.on('SIGINT', function() {
-    Mongoose.disconect(function(err) {
+    Mongoose.disconnect(function(err) {
         console.log('DB disconnected!')
         process.exit(err ? 1 : 0)
     })

@@ -5,7 +5,7 @@
     "license": "MIT",
     "scripts": {
         "start": "pm2 start ecosystem.config.js --env production",
-        "dev": "pm2 start ecosystem.config.js --env development --watch"
+        "dev": "pm2 start ecosystem.config.js --env development"
     },
     "dependencies": {
         "@hapi/boom": "^9.0.0",
@@ -24,6 +24,7 @@
         "node-sass": "^4.13.1",
         "pm2": "^4.2.3",
         "react-router-dom": "^5.1.2",
+        "sharp": "^0.25.1",
         "telegraf": "^3.36.0",
         "telegraf-router": "^1.0.7",
         "telegraf-session-local": "^1.0.2",

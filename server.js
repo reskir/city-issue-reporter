@@ -21,12 +21,7 @@ Mongoose.connect(process.env.DB_URL, {
 const start = async () => {
     const server = new Hapi.Server({
         port: 3001,
-        debug: { request: ['error'] },
-        routes: {
-            files: {
-                relativeTo: Path.join(__dirname, './ui/build/')
-            }
-        }
+        debug: { request: ['error'] }
     })
     await server.register([
         Inert,
@@ -52,6 +47,20 @@ const start = async () => {
             }
         }
     ])
+
+    server.route({
+        method: 'GET',
+        path: '/files/{param*}',
+        config: {
+            cors: {
+                origin: ['*']
+            }
+        },
+        handler(request, h) {
+            console.log(Path.join(__dirname, request.path))
+            return h.file(Path.join(__dirname, request.path)).code(200)
+        }
+    })
 
     server.route({
         method: 'GET',
@@ -97,7 +106,10 @@ const start = async () => {
             }
         },
         handler: async (request, h) => {
-            const users = await UserModel.find().populate('tickets')
+            const users = await UserModel.find(
+                {},
+                { name: 1, surname: 1 }
+            ).populate('tickets', '-photos -documents')
             return h.response(users)
         }
     })
@@ -112,7 +124,10 @@ const start = async () => {
         },
         handler: async (request, h) => {
             const id = request.params.id
-            const ticket = await TicketModel.findById(id)
+            const ticket = await TicketModel.findById(
+                id,
+                '-photos.buffer -photos.link'
+            )
             return ticket
         }
     })
@@ -127,7 +142,7 @@ const start = async () => {
         },
         handler: async (request, h) => {
             try {
-                const tickets = await TicketModel.find({})
+                const tickets = await TicketModel.find({}, '-photos -documents')
                 return h.response(tickets)
             } catch (error) {
                 return h.response(error).code(500)
@@ -164,7 +179,7 @@ const start = async () => {
             } catch (e) {
                 return Boom.badData(e)
             }
-            const { photos, plateNumber, documents } = ticket
+            const { photos, plateNumber } = ticket
             const message = getStatusUpdateMessage({
                 plateNumber,
                 status,
@@ -174,18 +189,22 @@ const start = async () => {
             let endpoint
             let params
             if (photos.length) {
-                endpoint = 'sendPhoto'
-                params = {
-                    chat_id: userId,
-                    photo: photos[0].file_id,
-                    caption: message
-                }
-            } else if (documents.length && !photos.length) {
-                endpoint = 'sendDocument'
-                params = {
-                    chat_id: userId,
-                    document: documents[0].file_id,
-                    caption: message
+                const isDocument = photos[0].isDocument
+                const fileId = photos[0].file_id
+                if (isDocument) {
+                    endpoint = 'sendDocument'
+                    params = {
+                        chat_id: userId,
+                        document: fileId,
+                        caption: message
+                    }
+                } else {
+                    endpoint = 'sendPhoto'
+                    params = {
+                        chat_id: userId,
+                        photo: fileId,
+                        caption: message
+                    }
                 }
             } else {
                 endpoint = 'sendMessage'
@@ -201,6 +220,7 @@ const start = async () => {
             Object.keys(params).forEach(key => {
                 url.searchParams.append(key, params[key])
             })
+
             await fetch(url)
 
             return h.response(ticket).code(200)

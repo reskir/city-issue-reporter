@@ -3,7 +3,12 @@ const Schema = Mongoose.Schema
 
 const PhotoSchema = new Schema({
     link: String,
-    file_id: String
+    file_id: String,
+    path: String,
+    isDocument: {
+        type: Boolean,
+        default: false
+    }
 })
 
 const StatusSchema = new Schema({

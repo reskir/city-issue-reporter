@@ -4,6 +4,7 @@ import { Map } from '../Map'
 import { Logs } from './Logs'
 import { useParams } from 'react-router-dom'
 import getTag from './helpers/getTag'
+import { Link } from 'react-router-dom'
 
 const fetchTicket = id => {
     return fetch(
@@ -117,14 +118,17 @@ export default function Ticket() {
                 {files.length > 0 && (
                     <div className="card margin-24 padding-24">
                         <div className="columns is-mobile">
-                            {files.map(file => {
+                            {files.map(({ path, _id }) => {
+                                const src = `//${process.env.REACT_APP_HOST}:3001/${path}`
                                 return (
-                                    <div className="column" key={file._id}>
-                                        <img
-                                            width={200}
-                                            src={file.link}
-                                            alt={file.link}
-                                        />
+                                    <div className="column" key={_id}>
+                                        <a href={src}>
+                                            <img
+                                                width={200}
+                                                src={src}
+                                                alt={`pažeidimo ${plateNumber} nuotrauka`}
+                                            />
+                                        </a>
                                     </div>
                                 )
                             })}

@@ -7,15 +7,14 @@ module.exports = {
             instances: 1,
             autorestart: true,
             watch: true,
+            watch: ['server.js', 'models.js'],
+            ignoreWatch: ['node_modules'],
             max_memory_restart: '1G',
             env: {
-                NODE_ENV: 'development',
-                watch: true,
-                ignoreWatch: ['node_modules']
+                NODE_ENV: 'development'
             },
             env_production: {
-                NODE_ENV: 'production',
-                watch: false
+                NODE_ENV: 'production'
             }
         },
         {
@@ -25,15 +24,14 @@ module.exports = {
             instances: 1,
             autorestart: true,
             watch: true,
+            watch: ['index.js', 'src/commands', 'models.js'],
+            ignoreWatch: ['node_modules'],
             max_memory_restart: '1G',
             env: {
-                NODE_ENV: 'development',
-                watch: ['src', 'helpers', 'index.js'],
-                ignoreWatch: ['node_modules']
+                NODE_ENV: 'development'
             },
             env_production: {
-                NODE_ENV: 'production',
-                watch: false
+                NODE_ENV: 'production'
             }
         }
     ]
