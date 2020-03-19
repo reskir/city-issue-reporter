@@ -81,7 +81,10 @@ bot.on('document', async ctx => {
         await request(
             { url: fileURL, encoding: null },
             async (err, resp, buffer) => {
-                const path = `files/${file_id}_${bot.context.uniqueId}.jpg`
+                if (!fs.existsSync(`files/${bot.context.uniqueId}`)) {
+                    fs.mkdirSync(`files/${bot.context.uniqueId}`)
+                }
+                const path = `files/${bot.context.uniqueId}/${file_id}.jpg`
                 await sharp(buffer)
                     .jpeg({
                         quality: 50,
@@ -108,27 +111,22 @@ bot.on('document', async ctx => {
                         longitude
                     }
                     ticket.time = new Date(time * 1000)
+                    ctx.reply(
+                        `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
+                    )
+                    await telegram.sendLocation(chatId, latitude, longitude)
+                    ctx.reply(
+                        `🕓 Pridėtas pranešimo laikas: ${new Date(
+                            time * 1000
+                        ).toLocaleString('lt-LT', {
+                            timeZone: 'Europe/Vilnius'
+                        })}`
+                    )
                 }
                 await ticket.save(async (err, res) => {
                     if (!err) {
                         ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
-                        if (ticket.location.latitude) {
-                            ctx.reply(
-                                `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
-                            )
-                            await telegram.sendLocation(
-                                chatId,
-                                latitude,
-                                longitude
-                            )
-                            ctx.reply(
-                                `🕓 Pridėtas pranešimo laikas: ${new Date(
-                                    time * 1000
-                                ).toLocaleString('lt-LT', {
-                                    timeZone: 'Europe/Vilnius'
-                                })}`
-                            )
-                        }
+                        console.log(ticket.location, latitude, longitude)
                     } else {
                         ctx.reply(err)
                     }
@@ -404,16 +402,20 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
             async function(err, res) {
                 if (!err && isAlreadyRegistered && isStatusWaiting) {
                     const { plateNumber } = isAlreadyRegistered
-                    const { photos } = isStatusWaiting
-                    if (photos.length) {
-                        await photos.forEach(({ path }) => {
-                            fs.unlink(path, err => {
-                                if (err) {
-                                    console.error(err)
-                                }
-                            })
-                        })
-                    }
+                    await fs.rmdir(`files/${id}`, { recursive: true }, err =>
+                        console.log(err)
+                    )
+                    // const { photos } = isStatusWaiting
+                    // if (photos.length) {
+                    //     await photos.forEach(({ path }) => {
+                    //         fs.rmDir(path, err => {
+                    //             if (err) {
+                    //                 console.error(err)
+                    //             }
+                    //             console.log(`photo was deleted`)
+                    //         })
+                    //     })
+                    // }
 
                     user.tickets = user.tickets.filter(
                         ({ _id }) => _id.toString() !== id

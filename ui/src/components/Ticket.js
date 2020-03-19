@@ -4,7 +4,6 @@ import { Map } from '../Map'
 import { Logs } from './Logs'
 import { useParams } from 'react-router-dom'
 import getTag from './helpers/getTag'
-import { Link } from 'react-router-dom'
 
 const fetchTicket = id => {
     return fetch(
