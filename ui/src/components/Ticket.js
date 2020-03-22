@@ -22,8 +22,6 @@ export default function Ticket() {
     }
 
     function deletePhoto({ ticketId, photoId, filePath }) {
-        console.log(ticketId, photoId, filePath)
-
         fetch(
             `//${process.env.REACT_APP_HOST}:3001/deletePhoto/?ticketId=${ticketId}&photoId=${photoId}&filePath=${filePath}`,
             { method: 'DELETE' }
@@ -82,12 +80,10 @@ export default function Ticket() {
             date,
             time,
             photos,
-            documents,
             currentStatus: { status },
             updates,
             _id: ticketId
         } = ticket
-        const files = [...documents, ...photos]
         const data = new Date(time || date).toLocaleString('lt-LT', {
             timeZone: 'Europe/Vilnius'
         })
@@ -126,10 +122,10 @@ export default function Ticket() {
                     </nav>
                 </div>
 
-                {files.length > 0 && (
+                {photos.length > 0 && (
                     <div className="card margin-24 padding-24">
                         <div className="columns is-mobile">
-                            {files.map(({ path, _id, file_id }) => {
+                            {photos.map(({ path, _id }) => {
                                 const src = `//${process.env.REACT_APP_HOST}:3001/${path}`
                                 return (
                                     <div className="column" key={_id}>

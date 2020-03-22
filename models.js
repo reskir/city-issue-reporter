@@ -45,7 +45,6 @@ const TicketSchema = new Schema({
     date: Date,
     time: String,
     photos: [PhotoSchema],
-    documents: [PhotoSchema],
     currentStatus: StatusSchema,
     updates: [
         {

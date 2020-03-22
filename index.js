@@ -125,13 +125,28 @@ bot.on(['document', 'photo'], async ctx => {
                         longitude
                     }
                     ticket.time = new Date(time * 1000)
+                    const url = `https://geocode.xyz/${latitude},${longitude}?json=1`
+                    await fetch(url)
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(async data => {
+                            console.log(data)
+                            if (data.staddress) {
+                                const address = `${data.staddress}. ${data.stnumber}`
+                                ticket.location.address = address
+                                ctx.reply(
+                                    `Adresas įrašytas ${bot.context.valstybinis_numeris}, 📍${address}`
+                                )
+                            }
+                        })
+
                     locationAdded = true
                 }
                 await ticket.save(async (err, res) => {
                     if (!err) {
-                        ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
                         ctx.reply(
-                            `Viso įkelta nuotraukų: ${ticket.photos.length}`
+                            `✅ Nuotrauka įrašyta ${ticket.plateNumber}\nViso įkelta nuotraukų: ${ticket.photos.length}`
                         )
                         if (locationAdded) {
                             ctx.reply(
@@ -325,8 +340,14 @@ bot.action('Remove all reports', async ctx => {
         .answerCbQuery()
         .then(async res => {
             const userId = ctx.update.callback_query.message.chat.id
-            const user = await UserModel.findOne({ userId })
+            const user = await UserModel.findOne({ userId }).populate('tickets')
             const id = user._id
+            const tickets = user.tickets
+            tickets.forEach(async ({ _id }) => {
+                await fs.rmdir(`files/${_id}`, { recursive: true }, err =>
+                    console.log(err)
+                )
+            })
             return await TicketModel.deleteMany(
                 {
                     user: Mongoose.Types.ObjectId(id)
