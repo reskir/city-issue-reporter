@@ -68,19 +68,32 @@ bot.command('ket', async (ctx, next) => {
     return await registerKet({ ctx, bot })
 })
 
-bot.on('document', async ctx => {
-    const type = ctx.update.message.document.mime_type
-    if (bot.context.uniqueId && type.includes('image')) {
+bot.on(['document', 'photo'], async ctx => {
+    const type = ctx.update.message?.document?.mime_type
+    if (bot.context.uniqueId) {
+        let fileURL
+        let file_id
+        let isDocument = false
         const chatId = ctx.update.message.chat.id
-        const file_id = ctx.update.message.document.file_id
-        const { file_path } = await telegram.getFile(file_id)
-        const fileURL = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`
+        if (type && type.includes('image')) {
+            isDocument = true
+            file_id = ctx.update.message.document.file_id
+            const { file_path } = await telegram.getFile(file_id)
+            fileURL = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`
+        } else {
+            const photos = ctx.message.photo
+            file_id = ctx.message.photo[photos.length - 1].file_id
+            fileURL = await telegram.getFileLink(file_id)
+        }
         const ticket = await TicketModel.findOne({
             _id: bot.context.uniqueId
         })
         await request(
             { url: fileURL, encoding: null },
             async (err, resp, buffer) => {
+                if (!fs.existsSync('files/')) {
+                    fs.mkdirSync('files/')
+                }
                 if (!fs.existsSync(`files/${bot.context.uniqueId}`)) {
                     fs.mkdirSync(`files/${bot.context.uniqueId}`)
                 }
@@ -96,7 +109,7 @@ bot.on('document', async ctx => {
                     link: fileURL,
                     file_id,
                     path,
-                    isDocument: true
+                    isDocument
                 })
                 const parser = exif.create(buffer)
                 const result = parser.parse()
@@ -117,6 +130,9 @@ bot.on('document', async ctx => {
                 await ticket.save(async (err, res) => {
                     if (!err) {
                         ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
+                        ctx.reply(
+                            `Viso įkelta nuotraukų: ${ticket.photos.length}`
+                        )
                         if (locationAdded) {
                             ctx.reply(
                                 `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `
@@ -178,42 +194,6 @@ bot.on('location', async ctx => {
                         .catch(err => ctx.reply(err))
                 } else if (err) {
                     console.log(err)
-                }
-            }
-        )
-    } else {
-        ctx.reply('Pradžiai įveskit /ket [automobilio valstybinis numeris]')
-    }
-})
-
-bot.on('photo', async ctx => {
-    if (bot.context.uniqueId) {
-        const photos = ctx.message.photo
-        const fileId = ctx.message.photo[photos.length - 1].file_id
-        const link = await telegram.getFileLink(fileId)
-        await request(
-            { url: link, encoding: null },
-            async (err, resp, buffer) => {
-                if (!err && resp) {
-                    await updateTicket(
-                        bot.context.uniqueId,
-                        {
-                            $addToSet: {
-                                photos: { link, file_id: fileId }
-                            }
-                        },
-                        (err, res) => {
-                            if (!err && res.ok === 1) {
-                                ctx.reply(
-                                    `✅ Nuotrauka įrašyta ${bot.context.valstybinis_numeris}`
-                                )
-                            } else if (err) {
-                                console.log(err)
-                            }
-                        }
-                    )
-                } else {
-                    ctx.reply(err)
                 }
             }
         )
