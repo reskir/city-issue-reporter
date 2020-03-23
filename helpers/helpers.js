@@ -32,7 +32,7 @@ export const getStatusMessage = ({
 }) => {
     const data = timeConverter(time || date)
     const registered = timeConverter(date)
-    return `Valstybinis numeris: ${plateNumber}\nLaikas: ${data}\nVieta: ${address}\nUžregistruotas: ${registered}\nStatusas: ${status.toUpperCase()}`
+    return `Valstybinis numeris: ${plateNumber}\nLaikas: ${data}\nUžregistruotas: ${registered}\nStatusas: ${status.toUpperCase()}`
 }
 
 export const getStatusUpdateMessage = ({ plateNumber, status, comment }) => {

@@ -74,7 +74,7 @@ export async function addPhoto({ ctx, bot, telegram }) {
                                 const address = `${data.staddress}. ${data.stnumber}`
                                 ticket.location.address = address
                                 ctx.reply(
-                                    `Adresas įrašytas ${bot.context.valstybinis_numeris}, 📍${address}`
+                                    `Adresas įrašytas ${bot.context.valstybinis_numeris}`
                                 )
                             }
                         })
@@ -83,9 +83,7 @@ export async function addPhoto({ ctx, bot, telegram }) {
                 }
                 await ticket.save(async (err, res) => {
                     if (!err) {
-                        ctx.reply(
-                            `✅ Nuotrauka įrašyta ${ticket.plateNumber}\nViso įkelta nuotraukų: ${ticket.photos.length}`
-                        )
+                        ctx.reply(`✅ Nuotrauka įrašyta ${ticket.plateNumber}`)
                         if (locationAdded) {
                             ctx.reply(
                                 `📌 Pridėta pranešimo lokacija ${ticket.plateNumber} `

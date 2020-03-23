@@ -51,14 +51,16 @@ bot.command('start', async ctx => {
             },
             function(err) {
                 if (!err) {
-                    ctx.reply(`Sveiki prisijungę ${first_name}`)
+                    ctx.reply(`Sveiki prisijungę`)
                 } else {
                     ctx.reply(err.message)
                 }
             }
         )
     } else {
-        ctx.reply(`Sveiki sugrižę ${first_name}!`)
+        ctx.reply(
+            `Sveiki, pradėkite registuoti KET pažeidimą su /ket [valstybinis numeris] komanda`
+        )
     }
 })
 
@@ -92,7 +94,7 @@ bot.on('location', async ctx => {
                                 async (err, res) => {
                                     if (!err && res.ok === 1) {
                                         ctx.reply(
-                                            `Lokacija įrašyta ${bot.context.valstybinis_numeris}, 📍${address}`
+                                            `Lokacija įrašyta ${bot.context.valstybinis_numeris}`
                                         )
                                     } else if (err) {
                                         ctx.reply(err)
