@@ -51,7 +51,9 @@ bot.command('start', async ctx => {
             },
             function(err) {
                 if (!err) {
-                    ctx.reply(`Sveiki prisijungę`)
+                    ctx.reply(
+                        `Sveiki, pradėkite registuoti KET pažeidimą su /ket [valstybinis numeris] komanda. Atmintinė kaip teisingai pranešti apie pažeidimą 👉 https://tvarkaumiesta.lt/pagalba/atmintine.pdf`
+                    )
                 } else {
                     ctx.reply(err.message)
                 }
@@ -59,7 +61,7 @@ bot.command('start', async ctx => {
         )
     } else {
         ctx.reply(
-            `Sveiki, pradėkite registuoti KET pažeidimą su /ket [valstybinis numeris] komanda`
+            `Sveiki, pradėkite registuoti KET pažeidimą su /ket [valstybinis numeris] komanda. Atmintinė kaip teisingai pranešti apie pažeidimą 👉 https://tvarkaumiesta.lt/pagalba/atmintine.pdf`
         )
     }
 })
