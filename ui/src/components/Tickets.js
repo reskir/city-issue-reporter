@@ -3,7 +3,7 @@ import getTag from './helpers/getTag'
 import { Link } from 'react-router-dom'
 
 const fetchTickets = () =>
-    fetch(`//${process.env.REACT_APP_HOST}:3001/getTickets`).then(res => {
+    fetch(`//${process.env.REACT_APP_HOST}/getTickets`).then(res => {
         return res.json()
     })
 

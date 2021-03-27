@@ -6,9 +6,9 @@ import { useParams } from 'react-router-dom'
 import getTag from './helpers/getTag'
 
 const fetchTicket = id => {
-    return fetch(
-        `//${process.env.REACT_APP_HOST}:3001/getTicket/${id}`
-    ).then(res => res.json())
+    return fetch(`//${process.env.REACT_APP_HOST}/getTicket/${id}`).then(res =>
+        res.json()
+    )
 }
 
 export default function Ticket() {
@@ -23,7 +23,7 @@ export default function Ticket() {
 
     function deletePhoto({ ticketId, photoId, filePath }) {
         fetch(
-            `//${process.env.REACT_APP_HOST}:3001/deletePhoto/?ticketId=${ticketId}&photoId=${photoId}&filePath=${filePath}`,
+            `//${process.env.REACT_APP_HOST}/deletePhoto/?ticketId=${ticketId}&photoId=${photoId}&filePath=${filePath}`,
             { method: 'DELETE' }
         )
             .then(res => res.json())
@@ -32,7 +32,7 @@ export default function Ticket() {
 
     function updateStatus(ticketId, comment) {
         fetch(
-            `//${process.env.REACT_APP_HOST}:3001/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
+            `//${process.env.REACT_APP_HOST}/updateStatus/?ticketId=${ticketId}&status=${selectValue}&comment=${comment}`,
             {
                 method: 'POST'
             }
@@ -126,7 +126,7 @@ export default function Ticket() {
                     <div className="card margin-24 padding-24">
                         <div className="columns is-mobile">
                             {photos.map(({ path, _id }) => {
-                                const src = `//${process.env.REACT_APP_HOST}:3001/${path}`
+                                const src = `//${process.env.REACT_APP_HOST}/${path}`
                                 return (
                                     <div className="column" key={_id}>
                                         <button

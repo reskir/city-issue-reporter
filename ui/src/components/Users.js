@@ -1,7 +1,7 @@
 import React from 'react'
 
 const fetchUsers = () =>
-    fetch(`//${process.env.REACT_APP_HOST}:3001/getUsers`).then(res => res.json())
+    fetch(`//${process.env.REACT_APP_HOST}/getUsers`).then(res => res.json())
 
 export default function Users() {
     const [data, setData] = React.useState([])
