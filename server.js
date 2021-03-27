@@ -6,17 +6,21 @@ import fs from 'fs'
 import Path from 'path'
 import fetch from 'node-fetch'
 import { TicketModel, UserModel } from './models'
-import { getStatusUpdateMessage, timeConverter } from './helpers/helpers'
+import { getStatusUpdateMessage } from './helpers/helpers'
 
-Mongoose.connect(process.env.DB_URL, {
-    dbName: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    pass: process.env.DB_PASS,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => console.log('Now connected to MongoDB!'))
-    .catch(err => console.error('Something went wrong', err))
+try {
+    Mongoose.connect(process.env.DB_URL, {
+        dbName: process.env.DB_NAME,
+        user: process.env.DB_USER,
+        pass: process.env.DB_PASS,
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
+        .then(() => console.log('Now connected to MongoDB!'))
+        .catch(err => console.error('Something went wrong', err))
+} catch (err) {
+    console.log(err)
+}
 
 const start = async () => {
     const server = new Hapi.Server({
@@ -143,6 +147,7 @@ const start = async () => {
         handler: async (request, h) => {
             try {
                 const tickets = await TicketModel.find({}, '-photos -documents')
+                console.log(tickets)
                 return h.response(tickets)
             } catch (error) {
                 return h.response(error).code(500)

@@ -1,5 +1,22 @@
 module.exports = {
     apps: [
+        // {
+        //     name: 'graphql',
+        //     script: './graphql.js',
+        //     node_args: '-r dotenv/config',
+        //     instances: 1,
+        //     autorestart: true,
+        //     watch: true,
+        //     watch: ['graphql.js'],
+        //     ignoreWatch: ['node_modules'],
+        //     max_memory_restart: '1G',
+        //     env: {
+        //         NODE_ENV: 'development'
+        //     },
+        //     env_production: {
+        //         NODE_ENV: 'production'
+        //     }
+        // },
         {
             name: 'hapi server',
             script: './server-app.js',
