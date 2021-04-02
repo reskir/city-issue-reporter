@@ -2,8 +2,9 @@ import fetch from 'node-fetch'
 import Mongoose from 'mongoose'
 import Telegraf from 'telegraf'
 import Telegram from 'telegraf/telegram'
+import session from 'telegraf/session'
 import { UserModel, TicketModel } from './models'
-import Markup from 'telegraf/markup'
+import Markup, { forceReply } from 'telegraf/markup'
 import Extra from 'telegraf/extra'
 import {
     getAllUserTickets,
@@ -13,6 +14,9 @@ import {
 import { registerKet } from './src/commands/ket'
 import { addPhoto } from './src/commands/addPhoto'
 import fs from 'fs'
+import request from 'request'
+
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 const { BOT_TOKEN } = process.env
 
@@ -35,6 +39,22 @@ Mongoose.connect(process.env.DB_URL, {
 
 const telegram = new Telegram(BOT_TOKEN)
 const bot = new Telegraf(BOT_TOKEN, { channelMode: false })
+
+bot.use(session())
+
+const addIssues = async () => {
+    try {
+        const response = await fetch(
+            'https://api-tvarkau.vilnius.lt/api/v2/problems/types?city_id=1&order=asc'
+        )
+        const { data: issues } = await response.json()
+        bot.context.issues = issues
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+addIssues()
 
 bot.command('start', async ctx => {
     const { id, first_name, last_name } = ctx.message.from
@@ -70,8 +90,158 @@ bot.command('ket', async (ctx, next) => {
     return await registerKet({ ctx, bot })
 })
 
+bot.command('login', async ctx => {
+    ctx.reply('Login')
+    const response = await fetch(
+        'https://api-tvarkau.vilnius.lt/api/v2/login/url/'
+    )
+    const { data } = await response.json()
+    ctx.reply(data?.loginUrl)
+})
+
+bot.command('token', async ctx => {
+    try {
+        const message = ctx?.message?.text
+        if (message) {
+            const token = message.replace('/token', '').replace(' ', '')
+            const userId = ctx.message.from.id
+            const user = await UserModel.findOne({
+                userId: userId
+            })
+            if (user && token) {
+                user.token = token
+                user.save()
+                ctx.reply('token added!')
+            }
+        }
+    } catch (err) {
+        ctx.reply(JSON.stringify(err))
+    }
+})
+
+bot.command('userId', async ctx => {
+    const message = ctx?.message?.text
+    if (message) {
+        const vilniusId = message.replace('/userId', '').replace(' ', '')
+        const userId = ctx.message.from.id
+        const user = await UserModel.findOne({
+            userId: userId
+        })
+
+        if (user && vilniusId) {
+            user.vilniusId = vilniusId
+            user.save()
+            ctx.reply('user id saved!')
+        }
+    }
+})
+
+bot.command('issue', async ctx => {
+    const { reply, issues } = ctx
+
+    try {
+        const keyboardOptions = []
+        for (const issue of issues) {
+            keyboardOptions.push([
+                {
+                    text: issue?.name,
+                    callback_data: JSON.stringify({
+                        issueId: issue?.id
+                    })
+                }
+            ])
+        }
+
+        await reply('Pasirinkite problemos tipa', {
+            reply_markup: {
+                remove_keyboard: true,
+                inline_keyboard: keyboardOptions
+            }
+        })
+    } catch (err) {
+        reply(JSON.stringify(err))
+    }
+})
+
+bot.command('current', ctx => {
+    if (ctx.session.issue) {
+        if (ctx.session.text) {
+            ctx.reply(`Problemos aprašymas: ${ctx.session.text}`)
+        }
+        if (ctx.session?.images) {
+            const images = ctx.session?.images
+            for (const image of images) {
+                console.log(image)
+                ctx.replyWithPhoto({ source: image })
+            }
+        }
+    } else {
+        ctx.reply('Problema nepasirinkta, /issue')
+    }
+})
+
+bot.command('text', async ctx => {
+    const message = ctx.message.text
+    const text = message.replace('/text', '').replace(' ', '')
+
+    if (ctx.session.issue && !text) {
+        ctx.reply(
+            `Įveskite problemos (${ctx.session.issue}) aprašymą /text [aprašymas]`
+        )
+    } else if (!ctx.session.issue) {
+        ctx.reply('Nepasirinkote problemos, įrašykite /issue')
+    } else if (ctx.session.issue && text) {
+        ctx.session.text = text
+        ctx.reply('aprašymas įrašytas')
+    }
+})
+
+bot.command('photo', async ctx => {
+    ctx.reply('įkelkite nuotraukas')
+})
+
+bot.on('callback_query', async ctx => {
+    const data = JSON.parse(ctx?.update?.callback_query?.data)
+    if (data) {
+        const issue = ctx?.issues.find(({ id }) => id === data?.issueId)
+        ctx.session.issue = issue.name
+        ctx.session.issueId = data?.issueId
+        ctx.reply(`Pasirinkote: ${issue.name}`)
+    }
+})
+
+bot.command('info', async ctx => {
+    const userId = ctx.message.from.id
+    const user = await UserModel.findOne({
+        userId: userId
+    })
+    ctx.reply(`Vilniaus miesto profilio ID: ${user.vilniusId}`)
+    ctx.reply(`Vartotojo vardas: ${user.name}`)
+    ctx.reply(`Užregistuota pranešimų: ${user.tickets?.length}`)
+})
+
+bot.command('tickets', async ctx => {
+    const user = await UserModel.findOne({
+        userId: userId
+    })
+})
+
 bot.on(['document', 'photo'], async ctx => {
-    await addPhoto({ ctx, bot, telegram })
+    if (ctx.session.issue) {
+        console.log(ctx.update.message.document)
+        const file_id = ctx.update.message.document.file_id
+        const { file_path } = await telegram.getFile(file_id)
+        const fileURL = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`
+        request({ url: fileURL, encoding: null }, (err, resp, buffer) => {
+            if (!ctx.session?.images) {
+                ctx.session.images = [buffer.toString('base64')]
+            } else {
+                ctx.session.images.push(buffer.toString('base64'))
+            }
+        })
+    }
+
+    //await addPhoto({ ctx, bot, telegram })
 })
 
 bot.on('location', async ctx => {
@@ -342,7 +512,7 @@ bot.hears(
     ],
     async ctx => {
         if (bot.context.uniqueId) {
-            const time = ctx.update.message.text
+            const time = ctx?.update?.message?.text
             await updateTicket(
                 bot.context.uniqueId,
                 { time: time },

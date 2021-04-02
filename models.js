@@ -32,7 +32,9 @@ const UserSchema = new Schema({
     userId: String,
     name: String,
     surname: String,
-    tickets: [{ type: Schema.ObjectId, ref: 'Ticket' }]
+    tickets: [{ type: Schema.ObjectId, ref: 'Ticket' }],
+    token: String,
+    vilniusId: Number
 })
 
 const TicketSchema = new Schema({
