@@ -244,13 +244,6 @@ bot.on(['document', 'photo'], async (ctx) => {
         } else {
             ctx.session.images.push(fileURL)
         }
-        // request({ url: fileURL, encoding: null }, (err, resp, buffer) => {
-        //     if (!ctx.session?.images) {
-        //         ctx.session.images = [fileURL]
-        //     } else {
-        //         ctx.session.images.push(fileURL)
-        //     }
-        // })
     }
 })
 
