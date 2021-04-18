@@ -25,14 +25,14 @@ module.exports = {
             autorestart: true,
             watch: true,
             watch: ['server.js', 'models.js'],
-            ignoreWatch: ['node_modules'],
+            ignoreWatch: ['node_modules', 'example_db.json'],
             max_memory_restart: '1G',
             env: {
-                NODE_ENV: 'development'
+                NODE_ENV: 'development',
             },
             env_production: {
-                NODE_ENV: 'production'
-            }
+                NODE_ENV: 'production',
+            },
         },
         {
             name: 'telegram bot',
@@ -42,14 +42,14 @@ module.exports = {
             autorestart: true,
             watch: true,
             watch: ['index.js', 'src/commands', 'models.js'],
-            ignoreWatch: ['node_modules'],
+            ignoreWatch: ['node_modules', 'example_db.json'],
             max_memory_restart: '1G',
             env: {
-                NODE_ENV: 'development'
+                NODE_ENV: 'development',
             },
             env_production: {
-                NODE_ENV: 'production'
-            }
-        }
-    ]
+                NODE_ENV: 'production',
+            },
+        },
+    ],
 }

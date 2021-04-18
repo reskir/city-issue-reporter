@@ -1,8 +1,7 @@
 import fetch from 'node-fetch'
 import Mongoose from 'mongoose'
-import { Telegraf, Markup } from 'telegraf'
-import session from 'telegraf/session'
-import { UserModel, TicketModel } from './models'
+import { Telegraf, Markup, session } from 'telegraf'
+import LocalSession from 'telegraf-session-local'
 import { UserModel, TicketModel } from './models'
 import {
     getAllUserTickets,
@@ -25,20 +24,9 @@ if (!BOT_TOKEN) {
     process.exit(1)
 }
 
-Mongoose.connect(process.env.DB_URL, {
-    dbName: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    pass: process.env.DB_PASS,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log('Now connected to MongoDB!'))
-    .catch((err) => console.error('Something went wrong', err))
-
 const bot = new Telegraf(BOT_TOKEN, { channelMode: false })
 
-<<<<<<< HEAD
-bot.use(session())
+bot.use(new LocalSession({ database: 'example_db.json' }).middleware())
 
 const addIssues = async () => {
     try {
@@ -52,12 +40,20 @@ const addIssues = async () => {
     }
 }
 
-addIssues()
+Mongoose.connect(process.env.DB_URL, {
+    dbName: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    pass: process.env.DB_PASS,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(async () => {
+        console.log('Now connected to MongoDB!')
+        await addIssues()
+    })
+    .catch((err) => console.error('Something went wrong', err))
 
-bot.command('start', async ctx => {
-=======
 bot.command('start', async (ctx) => {
->>>>>>> aae63a76c72774586ece7455094b276ce1e45f3a
     const { id, first_name, last_name } = ctx.message.from
     const user = await UserModel.findOne({
         userId: id,
@@ -91,8 +87,7 @@ bot.command('ket', async (ctx, next) => {
     return await registerKet({ ctx, bot })
 })
 
-<<<<<<< HEAD
-bot.command('login', async ctx => {
+bot.command('login', async (ctx) => {
     ctx.reply('Login')
     const response = await fetch(
         'https://api-tvarkau.vilnius.lt/api/v2/login/url/'
@@ -101,14 +96,14 @@ bot.command('login', async ctx => {
     ctx.reply(data?.loginUrl)
 })
 
-bot.command('token', async ctx => {
+bot.command('token', async (ctx) => {
     try {
         const message = ctx?.message?.text
         if (message) {
             const token = message.replace('/token', '').replace(' ', '')
             const userId = ctx.message.from.id
             const user = await UserModel.findOne({
-                userId: userId
+                userId: userId,
             })
             if (user && token) {
                 user.token = token
@@ -121,13 +116,13 @@ bot.command('token', async ctx => {
     }
 })
 
-bot.command('userId', async ctx => {
+bot.command('userId', async (ctx) => {
     const message = ctx?.message?.text
     if (message) {
         const vilniusId = message.replace('/userId', '').replace(' ', '')
         const userId = ctx.message.from.id
         const user = await UserModel.findOne({
-            userId: userId
+            userId: userId,
         })
 
         if (user && vilniusId) {
@@ -138,9 +133,8 @@ bot.command('userId', async ctx => {
     }
 })
 
-bot.command('issue', async ctx => {
+bot.command('issue', async (ctx) => {
     const { reply, issues } = ctx
-
     try {
         const keyboardOptions = []
         for (const issue of issues) {
@@ -148,24 +142,24 @@ bot.command('issue', async ctx => {
                 {
                     text: issue?.name,
                     callback_data: JSON.stringify({
-                        issueId: issue?.id
-                    })
-                }
+                        issueId: issue?.id,
+                    }),
+                },
             ])
         }
 
-        await reply('Pasirinkite problemos tipa', {
+        ctx.reply('Pasirinkite problemos tipa', {
             reply_markup: {
                 remove_keyboard: true,
-                inline_keyboard: keyboardOptions
-            }
+                inline_keyboard: keyboardOptions,
+            },
         })
     } catch (err) {
         reply(JSON.stringify(err))
     }
 })
 
-bot.command('current', ctx => {
+bot.command('current', (ctx) => {
     if (ctx.session.issue) {
         if (ctx.session.text) {
             ctx.reply(`Problemos aprašymas: ${ctx.session.text}`)
@@ -182,7 +176,7 @@ bot.command('current', ctx => {
     }
 })
 
-bot.command('text', async ctx => {
+bot.command('text', async (ctx) => {
     const message = ctx.message.text
     const text = message.replace('/text', '').replace(' ', '')
 
@@ -198,37 +192,40 @@ bot.command('text', async ctx => {
     }
 })
 
-bot.command('photo', async ctx => {
+bot.command('photo', async (ctx) => {
     ctx.reply('įkelkite nuotraukas')
 })
 
-bot.on('callback_query', async ctx => {
+bot.on('callback_query', async (ctx) => {
+    //console.log(ctx.update?.callback_query?.data)
     const data = JSON.parse(ctx?.update?.callback_query?.data)
+    console.log(data)
     if (data) {
         const issue = ctx?.issues.find(({ id }) => id === data?.issueId)
+        console.log(ctx.issues)
         ctx.session.issue = issue.name
         ctx.session.issueId = data?.issueId
         ctx.reply(`Pasirinkote: ${issue.name}`)
     }
 })
 
-bot.command('info', async ctx => {
+bot.command('info', async (ctx) => {
     const userId = ctx.message.from.id
     const user = await UserModel.findOne({
-        userId: userId
+        userId: userId,
     })
     ctx.reply(`Vilniaus miesto profilio ID: ${user.vilniusId}`)
     ctx.reply(`Vartotojo vardas: ${user.name}`)
     ctx.reply(`Užregistuota pranešimų: ${user.tickets?.length}`)
 })
 
-bot.command('tickets', async ctx => {
+bot.command('tickets', async (ctx) => {
     const user = await UserModel.findOne({
-        userId: userId
+        userId: userId,
     })
 })
 
-bot.on(['document', 'photo'], async ctx => {
+bot.on(['document', 'photo'], async (ctx) => {
     if (ctx.session.issue) {
         console.log(ctx.update.message.document)
         const file_id = ctx.update.message.document.file_id
@@ -244,10 +241,6 @@ bot.on(['document', 'photo'], async ctx => {
     }
 
     //await addPhoto({ ctx, bot, telegram })
-=======
-bot.on(['document', 'photo'], async (ctx) => {
-    await addPhoto({ ctx, bot })
->>>>>>> aae63a76c72774586ece7455094b276ce1e45f3a
 })
 
 bot.on('location', async (ctx) => {
