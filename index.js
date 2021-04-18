@@ -1,15 +1,13 @@
 import fetch from 'node-fetch'
 import Mongoose from 'mongoose'
-import Telegraf from 'telegraf'
-import Telegram from 'telegraf/telegram'
+import { Telegraf, Markup } from 'telegraf'
 import session from 'telegraf/session'
 import { UserModel, TicketModel } from './models'
-import Markup, { forceReply } from 'telegraf/markup'
-import Extra from 'telegraf/extra'
+import { UserModel, TicketModel } from './models'
 import {
     getAllUserTickets,
     updateTicket,
-    getStatusMessage
+    getStatusMessage,
 } from './helpers/helpers'
 import { registerKet } from './src/commands/ket'
 import { addPhoto } from './src/commands/addPhoto'
@@ -32,14 +30,14 @@ Mongoose.connect(process.env.DB_URL, {
     user: process.env.DB_USER,
     pass: process.env.DB_PASS,
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
 })
     .then(() => console.log('Now connected to MongoDB!'))
-    .catch(err => console.error('Something went wrong', err))
+    .catch((err) => console.error('Something went wrong', err))
 
-const telegram = new Telegram(BOT_TOKEN)
 const bot = new Telegraf(BOT_TOKEN, { channelMode: false })
 
+<<<<<<< HEAD
 bot.use(session())
 
 const addIssues = async () => {
@@ -57,9 +55,12 @@ const addIssues = async () => {
 addIssues()
 
 bot.command('start', async ctx => {
+=======
+bot.command('start', async (ctx) => {
+>>>>>>> aae63a76c72774586ece7455094b276ce1e45f3a
     const { id, first_name, last_name } = ctx.message.from
     const user = await UserModel.findOne({
-        userId: id
+        userId: id,
     })
     if (!user) {
         UserModel.create(
@@ -67,9 +68,9 @@ bot.command('start', async ctx => {
                 userId: id,
                 name: first_name,
                 surname: last_name,
-                tickets: []
+                tickets: [],
             },
-            function(err) {
+            function (err) {
                 if (!err) {
                     ctx.reply(
                         `Sveiki, pradėkite registuoti KET pažeidimą su /ket [valstybinis numeris] komanda. Atmintinė kaip teisingai pranešti apie pažeidimą 👉 https://tvarkaumiesta.lt/pagalba/atmintine.pdf`
@@ -90,6 +91,7 @@ bot.command('ket', async (ctx, next) => {
     return await registerKet({ ctx, bot })
 })
 
+<<<<<<< HEAD
 bot.command('login', async ctx => {
     ctx.reply('Login')
     const response = await fetch(
@@ -242,9 +244,13 @@ bot.on(['document', 'photo'], async ctx => {
     }
 
     //await addPhoto({ ctx, bot, telegram })
+=======
+bot.on(['document', 'photo'], async (ctx) => {
+    await addPhoto({ ctx, bot })
+>>>>>>> aae63a76c72774586ece7455094b276ce1e45f3a
 })
 
-bot.on('location', async ctx => {
+bot.on('location', async (ctx) => {
     if (bot.context.uniqueId) {
         const { location } = ctx.message
         await updateTicket(
@@ -255,10 +261,10 @@ bot.on('location', async ctx => {
                     const { latitude, longitude } = location
                     const url = `https://geocode.xyz/${latitude},${longitude}?json=1`
                     await fetch(url)
-                        .then(response => {
+                        .then((response) => {
                             return response.json()
                         })
-                        .then(async data => {
+                        .then(async (data) => {
                             const address = `${data.staddress}. ${data.stnumber}`
                             await updateTicket(
                                 bot.context.uniqueId,
@@ -274,7 +280,7 @@ bot.on('location', async ctx => {
                                 }
                             )
                         })
-                        .catch(err => ctx.reply(err))
+                        .catch((err) => ctx.reply(err))
                 } else if (err) {
                     console.log(err)
                 }
@@ -285,10 +291,10 @@ bot.on('location', async ctx => {
     }
 })
 
-bot.command('reports', async ctx => {
+bot.command('reports', async (ctx) => {
     const userId = ctx.message.from.id
     const user = await UserModel.findOne({
-        userId: userId
+        userId: userId,
     })
     if (user) {
         const tickets = await getAllUserTickets(user)
@@ -301,7 +307,7 @@ bot.command('reports', async ctx => {
                     time,
                     date,
                     location: { address = 'Nėra' },
-                    currentStatus: { status }
+                    currentStatus: { status },
                 }) => {
                     if (photos.length) {
                         const isDocument = photos[0].isDocument
@@ -309,18 +315,18 @@ bot.command('reports', async ctx => {
                             ? 'replyWithDocument'
                             : 'replyWithPhoto'
                         await ctx[replyOption](
-                            photos[0].file_id,
-                            Extra.load({
+                            { source: photos[0].file_id },
+                            {
                                 caption: getStatusMessage({
                                     plateNumber,
                                     time,
                                     address,
                                     date,
-                                    status
-                                })
-                            })
+                                    status,
+                                }),
+                            }
                                 .markdown()
-                                .markup(m => {
+                                .markup((m) => {
                                     if (status === 'laukiama patvirtinimo') {
                                         return m.inlineKeyboard([
                                             m.callbackButton(
@@ -330,11 +336,11 @@ bot.command('reports', async ctx => {
                                             m.callbackButton(
                                                 '❌ Pašalinti',
                                                 `REMOVE REPORT ${_id}`
-                                            )
+                                            ),
                                         ])
                                     }
                                 })
-                        ).catch(e => ctx.reply(e))
+                        ).catch((e) => ctx.reply(e))
                     } else {
                         await ctx.reply(
                             getStatusMessage({
@@ -342,21 +348,19 @@ bot.command('reports', async ctx => {
                                 time,
                                 address,
                                 date,
-                                status
+                                status,
                             }),
                             status === 'laukiama patvirtinimo'
-                                ? Extra.markup(
-                                      Markup.inlineKeyboard([
-                                          Markup.callbackButton(
-                                              `♻️ Pakeisti ${plateNumber}`,
-                                              `UPDATE REPORT ${_id}`
-                                          ),
-                                          Markup.callbackButton(
-                                              '❌ Pašalinti',
-                                              `REMOVE REPORT ${_id}`
-                                          )
-                                      ])
-                                  )
+                                ? Markup.inlineKeyboard([
+                                      Markup.callbackButton(
+                                          `♻️ Pakeisti ${plateNumber}`,
+                                          `UPDATE REPORT ${_id}`
+                                      ),
+                                      Markup.callbackButton(
+                                          '❌ Pašalinti',
+                                          `REMOVE REPORT ${_id}`
+                                      ),
+                                  ])
                                 : null
                         )
                     }
@@ -382,15 +386,13 @@ bot.command('remove', async (ctx, next) => {
         if (tickets.length) {
             return ctx.replyWithHTML(
                 `<b> Remove all ${tickets.length} reports?</b>`,
-                Extra.markup(
-                    Markup.inlineKeyboard([
-                        Markup.callbackButton(
-                            `Panaikinti visus ${tickets.length} pranšimus`,
-                            'Remove all reports'
-                        ),
-                        Markup.callbackButton('Ne', 'No')
-                    ]).oneTime()
-                )
+                Markup.inlineKeyboard([
+                    Markup.callbackButton(
+                        `Panaikinti visus ${tickets.length} pranšimus`,
+                        'Remove all reports'
+                    ),
+                    Markup.callbackButton('Ne', 'No'),
+                ]).oneTime()
             )
         } else {
             return ctx.reply('Pranešimų nėra.')
@@ -398,29 +400,29 @@ bot.command('remove', async (ctx, next) => {
     }
 })
 
-bot.action('No', async ctx => {
+bot.action('No', async (ctx) => {
     await ctx.answerCbQuery()
     await ctx.reply('Gerai 👌')
 })
 
-bot.action('Remove all reports', async ctx => {
+bot.action('Remove all reports', async (ctx) => {
     return ctx
         .answerCbQuery()
-        .then(async res => {
+        .then(async (res) => {
             const userId = ctx.update.callback_query.message.chat.id
             const user = await UserModel.findOne({ userId }).populate('tickets')
             const id = user._id
             const tickets = user.tickets
             tickets.forEach(async ({ _id }) => {
-                await fs.rmdir(`files/${_id}`, { recursive: true }, err =>
+                await fs.rmdir(`files/${_id}`, { recursive: true }, (err) =>
                     console.log(err)
                 )
             })
             return await TicketModel.deleteMany(
                 {
-                    user: Mongoose.Types.ObjectId(id)
+                    user: Mongoose.Types.ObjectId(id),
                 },
-                function(err, res) {
+                function (err, res) {
                     if (!err) {
                         user.tickets = []
                         user.save()
@@ -431,10 +433,10 @@ bot.action('Remove all reports', async ctx => {
                 }
             )
         })
-        .catch(err => ctx.reply(err))
+        .catch((err) => ctx.reply(err))
 })
 
-bot.action(/\UPDATE REPORT +.*/, async ctx => {
+bot.action(/\UPDATE REPORT +.*/, async (ctx) => {
     const id = ctx.update.callback_query.data.replace('UPDATE REPORT ', '')
     const userId = ctx.update.callback_query.message.chat.id
     const user = await UserModel.findOne({ userId }).populate('tickets')
@@ -458,7 +460,7 @@ bot.action(/\UPDATE REPORT +.*/, async ctx => {
     }
 })
 
-bot.action(/\REMOVE REPORT +.*/, async ctx => {
+bot.action(/\REMOVE REPORT +.*/, async (ctx) => {
     const id = ctx.update.callback_query.data.replace('REMOVE REPORT ', '')
     const userId = ctx.update.callback_query.message.chat.id
     const user = await UserModel.findOne({ userId }).populate('tickets')
@@ -473,12 +475,12 @@ bot.action(/\REMOVE REPORT +.*/, async ctx => {
         await TicketModel.deleteOne(
             {
                 _id: id,
-                user: Mongoose.Types.ObjectId(user._id)
+                user: Mongoose.Types.ObjectId(user._id),
             },
-            async function(err, res) {
+            async function (err, res) {
                 if (!err && isAlreadyRegistered && isStatusWaiting) {
                     const { plateNumber } = isAlreadyRegistered
-                    await fs.rmdir(`files/${id}`, { recursive: true }, err =>
+                    await fs.rmdir(`files/${id}`, { recursive: true }, (err) =>
                         console.log(err)
                     )
 
@@ -508,9 +510,9 @@ bot.hears(
     [
         /(\d{1,2})+\:+(\d{1,2})/,
         /\d{4}.\d{1,2}.\d{1,2}/,
-        /\d{4}.\d{1,2}.\d{1,2} \d{1,2}.\d{1,2}/
+        /\d{4}.\d{1,2}.\d{1,2} \d{1,2}.\d{1,2}/,
     ],
-    async ctx => {
+    async (ctx) => {
         if (bot.context.uniqueId) {
             const time = ctx?.update?.message?.text
             await updateTicket(
@@ -535,8 +537,8 @@ bot.hears(
 
 bot.launch()
 
-process.on('SIGINT', function() {
-    Mongoose.disconnect(function(err) {
+process.on('SIGINT', function () {
+    Mongoose.disconnect(function (err) {
         console.log('DB disconnected!')
         process.exit(err ? 1 : 0)
     })
