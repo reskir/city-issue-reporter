@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import Mongoose from 'mongoose'
-import { Telegraf, Markup, session } from 'telegraf'
+import { Telegraf, Markup, Telegram } from 'telegraf'
 import LocalSession from 'telegraf-session-local'
 import { UserModel, TicketModel } from './models'
 import {
@@ -23,6 +23,8 @@ if (!BOT_TOKEN) {
     )
     process.exit(1)
 }
+
+const telegram = new Telegram(BOT_TOKEN)
 
 const bot = new Telegraf(BOT_TOKEN, { channelMode: false })
 
@@ -116,6 +118,18 @@ bot.command('token', async (ctx) => {
     }
 })
 
+bot.command('reset', (ctx) => {
+    if (ctx?.session?.issue) {
+        ctx.replyWithMarkdown(
+            `Removing session from database: \`${JSON.stringify(
+                ctx.session.issue.name
+            )}\``
+        )
+        // Setting session to null, undefined or empty object/array will trigger removing it from database
+        ctx.session = null
+    }
+})
+
 bot.command('userId', async (ctx) => {
     const message = ctx?.message?.text
     if (message) {
@@ -160,7 +174,9 @@ bot.command('issue', async (ctx) => {
 })
 
 bot.command('current', (ctx) => {
-    if (ctx.session.issue) {
+    const { issue } = ctx.session
+    if (issue) {
+        ctx.reply(`Pasirinkta problema: ${issue}`)
         if (ctx.session.text) {
             ctx.reply(`Problemos aprašymas: ${ctx.session.text}`)
         }
@@ -168,7 +184,7 @@ bot.command('current', (ctx) => {
             const images = ctx.session?.images
             for (const image of images) {
                 console.log(image)
-                ctx.replyWithPhoto({ source: image })
+                ctx.replyWithPhoto(image)
             }
         }
     } else {
@@ -227,7 +243,6 @@ bot.command('tickets', async (ctx) => {
 
 bot.on(['document', 'photo'], async (ctx) => {
     if (ctx.session.issue) {
-        console.log(ctx.update.message.document)
         const file_id = ctx.update.message.document.file_id
         const { file_path } = await telegram.getFile(file_id)
         const fileURL = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`
