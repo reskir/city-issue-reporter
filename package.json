@@ -24,7 +24,7 @@
         "node-sass": "^4.13.1",
         "pm2": "^4.5.6",
         "react-router-dom": "^5.1.2",
-        "sharp": "^0.28.0",
+        "sharp": "^0.30.5",
         "telegraf": "^4.3.0",
         "telegraf-router": "^1.0.7",
         "telegraf-session-local": "^2.1.0",
